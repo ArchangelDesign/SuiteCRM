@@ -1,20 +1,22 @@
 <?php
 
-class FP_Event_LocationsTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
-{
-    public function testFP_Event_Locations()
-    {
-        //execute the contructor and check for the Object type and  attributes
-        $fpEventLoc = new FP_Event_Locations();
-        $this->assertInstanceOf('FP_Event_Locations', $fpEventLoc);
-        $this->assertInstanceOf('Basic', $fpEventLoc);
-        $this->assertInstanceOf('SugarBean', $fpEventLoc);
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
 
-        $this->assertAttributeEquals('FP_Event_Locations', 'module_dir', $fpEventLoc);
-        $this->assertAttributeEquals('FP_Event_Locations', 'object_name', $fpEventLoc);
-        $this->assertAttributeEquals('fp_event_locations', 'table_name', $fpEventLoc);
-        $this->assertAttributeEquals(true, 'new_schema', $fpEventLoc);
-        $this->assertAttributeEquals(false, 'importable', $fpEventLoc);
-        $this->assertAttributeEquals(true, 'disable_row_level_security', $fpEventLoc);
+class FP_Event_LocationsTest extends SuitePHPUnitFrameworkTestCase
+{
+    public function testFP_Event_Locations(): void
+    {
+        // Execute the constructor and check for the Object type and  attributes
+        $fpEventLoc = BeanFactory::newBean('FP_Event_Locations');
+        self::assertInstanceOf('FP_Event_Locations', $fpEventLoc);
+        self::assertInstanceOf('Basic', $fpEventLoc);
+        self::assertInstanceOf('SugarBean', $fpEventLoc);
+
+        self::assertEquals('FP_Event_Locations', $fpEventLoc->module_dir);
+        self::assertEquals('FP_Event_Locations', $fpEventLoc->object_name);
+        self::assertEquals('fp_event_locations', $fpEventLoc->table_name);
+        self::assertEquals(true, $fpEventLoc->new_schema);
+        self::assertEquals(false, $fpEventLoc->importable);
+        self::assertEquals(true, $fpEventLoc->disable_row_level_security);
     }
 }

@@ -232,7 +232,7 @@ function getPeriodDate($date_time_period_list_selected)
     $datetime_period = new DateTime();
 
     // Setup when year quarters start & end
-    if ($sugar_config['aor']['quarters_begin']) {
+    if (isset($sugar_config['aor']['quarters_begin'])) {
         $q = calculateQuarters($sugar_config['aor']['quarters_begin']);
     } else {
         $q = calculateQuarters();
@@ -336,8 +336,11 @@ function getPeriodEndDate($dateTimePeriodListSelected)
 {
     switch ($dateTimePeriodListSelected) {
         case 'today':
-        case 'yesterday':
             $datetimePeriod = new DateTime();
+            break;
+        case 'yesterday':
+            $datetimePeriod = new DateTime("yesterday");
+            $datetimePeriod->setTime(23, 59, 59);
             break;
         case 'this_week':
             $datetimePeriod = new DateTime("next week monday");

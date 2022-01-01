@@ -1,7 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) {
-    die('Not A Valid Entry Point');
-}
 /**
  *
  * SugarCRM Community Edition is a customer relationship management program developed by
@@ -40,6 +37,10 @@ if (!defined('sugarEntry') || !sugarEntry) {
  * reasonably feasible for technical reasons, the Appropriate Legal Notices must
  * display the words "Powered by SugarCRM" and "Supercharged by SuiteCRM".
  */
+
+if (!defined('sugarEntry') || !sugarEntry) {
+    die('Not A Valid Entry Point');
+}
 
 function installStatus($msg, $cmd = null, $overwrite = false, $before = '[ok]<br>')
 {
@@ -260,7 +261,7 @@ foreach ($beanFiles as $bean => $file) {
         }
         if (!in_array($bean, $nonStandardModules)) {
             require_once("modules/".$focus->module_dir."/vardefs.php"); // load up $dictionary
-            if ($dictionary[$focus->object_name]['table'] == 'does_not_exist') {
+            if (isset($dictionary[$focus->object_name]['table']) && $dictionary[$focus->object_name]['table'] == 'does_not_exist') {
                 continue; // support new vardef definitions
             }
         } else {
@@ -362,14 +363,10 @@ installStatus($mod_strings['STAT_CREATE_DEFAULT_SETTINGS']);
 
     echo $line_entry_format.$mod_strings['LBL_PERFORM_DEFAULT_SCHEDULER'].$line_exit_format;
     installLog($mod_strings['LBL_PERFORM_DEFAULT_SCHEDULER']);
-    $scheduler = new Scheduler();
+    $scheduler = BeanFactory::newBean('Schedulers');
     installerHook('pre_createDefaultSchedulers');
     $scheduler->rebuildDefaultSchedulers();
     installerHook('post_createDefaultSchedulers');
-
-
-installLog($mod_strings['LBL_CREATE_DEFAULT_ENC_KEY']);
-createEncryptionKey();
 
 
     echo $mod_strings['LBL_PERFORM_DONE'];
@@ -434,7 +431,7 @@ FP;
         set_CheckUpdates_config_setting('manual');
     }
     if (!empty($_SESSION['setup_system_name'])) {
-        $admin=new Administration();
+        $admin=BeanFactory::newBean('Administration');
         $admin->saveSetting('system', 'name', $_SESSION['setup_system_name']);
     }
 
@@ -468,12 +465,7 @@ FP;
     $enabled_tabs[] = 'AOS_Products';
     $enabled_tabs[] = 'AOS_Product_Categories';
     $enabled_tabs[] = 'AOS_PDF_Templates';
-    $enabled_tabs[] = 'jjwg_Maps';
-    $enabled_tabs[] = 'jjwg_Markers';
-    $enabled_tabs[] = 'jjwg_Areas';
-    $enabled_tabs[] = 'jjwg_Address_Cache';
     $enabled_tabs[] = 'AOR_Reports';
-    $enabled_tabs[] = 'AOW_WorkFlow';
     $enabled_tabs[] = 'AOK_KnowledgeBase';
     $enabled_tabs[] = 'AOK_Knowledge_Base_Categories';
     $enabled_tabs[] = 'EmailTemplates';
@@ -538,16 +530,12 @@ if (!is_null($_SESSION['scenarios'])) {
 
 
 //Write the tabstructure to custom so that the grouping are not shown for the un-selected scenarios
-$fp = sugar_fopen('custom/include/tabConfig.php', 'w');
 $fileContents = "<?php \n" .'$GLOBALS["tabStructure"] ='.var_export($GLOBALS['tabStructure'], true).';';
-fwrite($fp, $fileContents);
-fclose($fp);
+sugar_file_put_contents('custom/include/tabConfig.php', $fileContents);
 
 //Write the dashlets to custom so that the dashlets are not shown for the un-selected scenarios
-$fp = sugar_fopen('custom/modules/Home/dashlets.php', 'w');
 $fileContents = "<?php \n" .'$defaultDashlets ='.var_export($defaultDashlets, true).';';
-fwrite($fp, $fileContents);
-fclose($fp);
+sugar_file_put_contents('custom/modules/Home/dashlets.php', $fileContents);
 
 
 // End of the scenario implementations
@@ -586,7 +574,7 @@ if ($_SESSION['demoData'] != 'no') {
     print($render_table_open);
 
     global $current_user;
-    $current_user = new User();
+    $current_user = BeanFactory::newBean('Users');
     $current_user->retrieve(1);
     include("install/populateSeedData.php");
     installerHook('post_installDemoData');
@@ -618,7 +606,7 @@ installLog('save locale');
 
 //global $current_user;
 installLog('new Administration');
-$focus = new Administration();
+$focus = BeanFactory::newBean('Administration');
 installLog('retrieveSettings');
 //$focus->retrieveSettings();
 // switch off the adminwizard (mark that we have got past this point)
@@ -694,7 +682,7 @@ installLog('Save user settings..');
 // set all of these default parameters since the Users save action will undo the defaults otherwise
 
 // load admin
-$current_user = new User();
+$current_user = BeanFactory::newBean('Users');
 $current_user->retrieve(1);
 $current_user->is_admin = '1';
 $sugar_config = get_sugar_config_defaults();

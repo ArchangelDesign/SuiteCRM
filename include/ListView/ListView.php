@@ -8,7 +8,7 @@ if (!defined('sugarEntry') || !sugarEntry) {
  * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
  *
  * SuiteCRM is an extension to SugarCRM Community Edition developed by SalesAgility Ltd.
- * Copyright (C) 2011 - 2018 SalesAgility Ltd.
+ * Copyright (C) 2011 - 2020 SalesAgility Ltd.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -883,9 +883,10 @@ class ListView
         if ($this->query_where_has_changed || isset($GLOBALS['record_has_changed'])) {
             $this->setSessionVariable($localVarName, 'offset', 0);
         }
+        // this might return several kinds of values: 0, '', 'end', etc
         $offset = $this->getSessionVariable($localVarName, 'offset');
-        if (isset($offset)) {
-            return (int)$offset;
+        if (isset($offset) && ($offset !== '')) {
+            return $offset;
         }
 
         return 0;
@@ -935,7 +936,7 @@ class ListView
         if (isset($_SESSION[$this->getSessionVariableName($localVarName, $varName)])) {
             return $_SESSION[$this->getSessionVariableName($localVarName, $varName)];
         }
-        return "";
+        return '';
     }
 
     public function getUserVariable($localVarName, $varName)
@@ -1135,23 +1136,28 @@ class ListView
             str_replace(' ', '', trim($subpanel_def->_instance_properties['sort_by'])) == 'last_name,first_name') {
             $this->sortby = 'last_name '.$this->sort_order.', first_name ';
         }
+        try {
+            if (!empty($this->response)) {
+                $response =& $this->response;
+                echo 'cached';
+            } else {
+                $response = SugarBean::get_union_related_list(
+                    $sugarbean,
+                    $this->sortby,
+                    $this->sort_order,
+                    $this->query_where,
+                    $current_offset,
+                    -1,
+                    $this->records_per_page,
+                    $this->query_limit,
+                    $subpanel_def
+                );
+                $this->response =& $response;
+            }
+        } catch (Exception $ex) {
+            LoggerManager::getLogger()->fatal('[' . __METHOD__ . "] . {$ex->getMessage()}");
 
-        if (!empty($this->response)) {
-            $response =& $this->response;
-            echo 'cached';
-        } else {
-            $response = SugarBean::get_union_related_list(
-                $sugarbean,
-                $this->sortby,
-                $this->sort_order,
-                $this->query_where,
-                $current_offset,
-                -1,
-                $this->records_per_page,
-                $this->query_limit,
-                $subpanel_def
-            );
-            $this->response =& $response;
+            return ['list' => [], 'parent_data' => [], 'query' => ''];
         }
         $list = $response['list'];
         
@@ -1262,7 +1268,7 @@ class ListView
         }
 
         $end_record = $start_record + $this->records_per_page;
-        // back up the the last page.
+        // back up the last page.
         if ($end_record > $row_count+1) {
             $end_record = $row_count+1;
         }
@@ -1445,7 +1451,7 @@ class ListView
                 $delete_link = '&nbsp;';
             }
 
-            $admin = new Administration();
+            $admin = BeanFactory::newBean('Administration');
             $admin->retrieveSettings('system');
 
             $user_merge = $current_user->getPreference('mailmerge_on');

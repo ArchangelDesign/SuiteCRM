@@ -1,95 +1,80 @@
 <?php
 
-class TrackerTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
+
+class TrackerTest extends SuitePHPUnitFrameworkTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         global $current_user;
         get_sugar_config_defaults();
-        $current_user = new User();
-    }
-    
-    public function testTracker()
-    {
-        //execute the contructor and check for the Object type and  attributes
-        $tracker = new Tracker();
-
-        $this->assertInstanceOf('Tracker', $tracker);
-        $this->assertInstanceOf('SugarBean', $tracker);
-
-        $this->assertAttributeEquals('tracker', 'table_name', $tracker);
-        $this->assertAttributeEquals('Trackers', 'module_dir', $tracker);
-        $this->assertAttributeEquals('Tracker', 'object_name', $tracker);
-
-        $this->assertAttributeEquals(true, 'disable_var_defs', $tracker);
-
-        $this->assertAttributeEquals('Tracker', 'acltype', $tracker);
-        $this->assertAttributeEquals('Trackers', 'acl_category', $tracker);
-        $this->assertAttributeEquals(true, 'disable_custom_fields', $tracker);
+        $current_user = BeanFactory::newBean('Users');
     }
 
-    public function testget_recently_viewed()
+    public function testTracker(): void
     {
-        // save state
-        $state = new \SuiteCRM\StateSaver();
-        $state->pushGlobals();
+        // Execute the constructor and check for the Object type and  attributes
+        $tracker = BeanFactory::newBean('Trackers');
 
-        // test
-        $tracker = new Tracker();
+        self::assertInstanceOf('Tracker', $tracker);
+        self::assertInstanceOf('SugarBean', $tracker);
 
-        $result = $tracker->get_recently_viewed(1);
+        self::assertEquals('tracker', $tracker->table_name);
+        self::assertEquals('Trackers', $tracker->module_dir);
+        self::assertEquals('Tracker', $tracker->object_name);
 
-        $this->assertInstanceOf('BreadCrumbStack', $_SESSION['breadCrumbs']);
-        $this->assertTrue(is_array($result));
-        
-        // clean up
-        $state->popGlobals();
+        self::assertEquals(true, $tracker->disable_var_defs);
+
+        self::assertEquals('Tracker', $tracker->acltype);
+        self::assertEquals('Trackers', $tracker->acl_category);
+        self::assertEquals(true, $tracker->disable_custom_fields);
     }
 
-    public function testmakeInvisibleForAll()
+    public function testget_recently_viewed(): void
     {
-        $tracker = new Tracker();
+        $result = BeanFactory::newBean('Trackers')->get_recently_viewed(1);
 
-        //execute the method and test if it works and does not throws an exception.
+        self::assertInstanceOf('BreadCrumbStack', $_SESSION['breadCrumbs']);
+        self::assertIsArray($result);
+    }
+
+    public function testmakeInvisibleForAll(): void
+    {
+        $tracker = BeanFactory::newBean('Trackers');
+
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $tracker->makeInvisibleForAll(1);
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
     }
 
-    public function testbean_implements()
+    public function testbean_implements(): void
     {
-        $tracker = new Tracker();
+        $tracker = BeanFactory::newBean('Trackers');
 
-        $this->assertEquals(false, $tracker->bean_implements('')); //test with blank value
-        $this->assertEquals(false, $tracker->bean_implements('test')); //test with invalid value
-        $this->assertEquals(false, $tracker->bean_implements('ACL')); //test with valid value
+        self::assertEquals(false, $tracker->bean_implements('')); //test with blank value
+        self::assertEquals(false, $tracker->bean_implements('test')); //test with invalid value
+        self::assertEquals(false, $tracker->bean_implements('ACL')); //test with valid value
     }
 
-    public function testlogPage()
+    public function testlogPage(): void
     {
         self::markTestIncomplete('Test parameters and local variables are not set');
-                
-        $state = new SuiteCRM\StateSaver();
-        
-        $state->pushGlobals();
 
         //test without setting headerDisplayed
         Tracker::logPage();
-        $this->assertEquals(null, $_SESSION['lpage']);
+        self::assertEquals(null, $_SESSION['lpage']);
 
         //test with headerDisplayed set
         $GLOBALS['app']->headerDisplayed = 1;
         Tracker::logPage();
-        $this->assertEquals(time(), $_SESSION['lpage']);
-        
+        self::assertEquals(time(), $_SESSION['lpage']);
+
         //$this->assertEquals(time(), null);
-        
-        // clean up
-        $state->popGlobals();
     }
 }

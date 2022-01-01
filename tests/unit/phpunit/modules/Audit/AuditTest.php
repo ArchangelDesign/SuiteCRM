@@ -1,173 +1,149 @@
 <?php
 
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
+
 require_once 'modules/Audit/Audit.php';
-class AuditTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+class AuditTest extends SuitePHPUnitFrameworkTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         global $current_user;
         get_sugar_config_defaults();
-        $current_user = new User();
+        $current_user = BeanFactory::newBean('Users');
     }
 
-    public function testAudit()
+    public function testAudit(): void
     {
-        //execute the contructor and check for the Object type and  attributes
-        $audit = new Audit();
-        $this->assertInstanceOf('Audit', $audit);
-        $this->assertInstanceOf('SugarBean', $audit);
-        $this->assertAttributeEquals('Audit', 'module_dir', $audit);
-        $this->assertAttributeEquals('Audit', 'object_name', $audit);
+        // Execute the constructor and check for the Object type and  attributes
+        $audit = BeanFactory::newBean('Audit');
+        self::assertInstanceOf('Audit', $audit);
+        self::assertInstanceOf('SugarBean', $audit);
+        self::assertEquals('Audit', $audit->module_dir);
+        self::assertEquals('Audit', $audit->object_name);
     }
 
-    public function testget_summary_text()
+    public function testget_summary_text(): void
     {
-        $audit = new Audit();
+        $audit = BeanFactory::newBean('Audit');
 
         //test without setting name
-        $this->assertEquals(null, $audit->get_summary_text());
+        self::assertEquals(null, $audit->get_summary_text());
 
         //test with name set
         $audit->name = 'test';
-        $this->assertEquals('test', $audit->get_summary_text());
+        self::assertEquals('test', $audit->get_summary_text());
     }
 
-    public function testcreate_export_query()
+    public function testcreate_export_query(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $audit = new Audit();
+        $audit = BeanFactory::newBean('Audit');
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $audit->create_export_query('', '');
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
 
-        $this->markTestIncomplete('method has no implementation');
-        
-        // clean up
+        self::markTestIncomplete('method has no implementation');
     }
 
-    public function testfill_in_additional_list_fields()
+    public function testfill_in_additional_list_fields(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $audit = new Audit();
-        //execute the method and test if it works and does not throws an exception.
+        $audit = BeanFactory::newBean('Audit');
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $audit->fill_in_additional_list_fields();
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
 
-        $this->markTestIncomplete('method has no implementation');
-        
-        // clean up
+        self::markTestIncomplete('method has no implementation');
     }
 
-    public function testfill_in_additional_detail_fields()
+    public function testfill_in_additional_detail_fields(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $audit = new Audit();
-        //execute the method and test if it works and does not throws an exception.
+        $audit = BeanFactory::newBean('Audit');
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $audit->fill_in_additional_detail_fields();
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
 
-        $this->markTestIncomplete('method has no implementation');
-        
-        // clean up
+        self::markTestIncomplete('method has no implementation');
     }
 
-    public function testfill_in_additional_parent_fields()
+    public function testfill_in_additional_parent_fields(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $audit = new Audit();
-        //execute the method and test if it works and does not throws an exception.
+        $audit = BeanFactory::newBean('Audit');
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $audit->fill_in_additional_parent_fields();
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
 
-        $this->markTestIncomplete('method has no implementation');
-        
-        // clean up
+        self::markTestIncomplete('method has no implementation');
     }
 
-    public function testget_list_view_data()
+    public function testget_list_view_data(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $audit = new Audit();
-        //execute the method and test if it works and does not throws an exception.
+        $audit = BeanFactory::newBean('Audit');
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $audit->get_list_view_data();
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
 
-        $this->markTestIncomplete('method has no implementation');
-        
-        // clean up
+        self::markTestIncomplete('method has no implementation');
     }
 
-    public function testget_audit_link()
+    public function testget_audit_link(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $audit = new Audit();
-        //execute the method and test if it works and does not throws an exception.
+        $audit = BeanFactory::newBean('Audit');
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $audit->get_audit_link();
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
 
-        $this->markTestIncomplete('method has no implementation');
-        
-        // clean up
+        self::markTestIncomplete('method has no implementation');
     }
 
-    public function testget_audit_list()
+    public function testget_audit_list(): void
     {
         global $focus;
-        $focus = new Account(); //use audit enabbled module object
-
-        $audit = new Audit();
+        $focus = BeanFactory::newBean('Accounts'); //use audit enabbled module object
 
         //execute the method and verify that it returns an array
-        $result = $audit->get_audit_list();
-        $this->assertTrue(is_array($result));
+        $result = BeanFactory::newBean('Audit')->get_audit_list();
+        self::assertIsArray($result);
     }
 
-    public function testgetAssociatedFieldName()
+    public function testgetAssociatedFieldName(): void
     {
         global $focus;
-        $focus = new Account(); //use audit enabbled module object
+        $focus = BeanFactory::newBean('Accounts'); //use audit enabbled module object
 
-        $audit = new Audit();
+        $audit = BeanFactory::newBean('Audit');
 
         //test with name field
         $result = $audit->getAssociatedFieldName('name', '1');
-        $this->assertEquals('1', $result);
+        self::assertEquals('1', $result);
 
         //test with parent_id field
         $result = $audit->getAssociatedFieldName('parent_id', '1');
-        $this->assertEquals(null, $result);
+        self::assertEquals(null, $result);
     }
 }

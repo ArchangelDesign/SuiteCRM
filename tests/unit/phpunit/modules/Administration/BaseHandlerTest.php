@@ -38,21 +38,21 @@
 * display the words "Powered by SugarCRM" and "Supercharged by SuiteCRM".
 */
 
-use SuiteCRM\StateCheckerPHPUnitTestCaseAbstract;
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
 
 if (!defined('sugarEntry') || !sugarEntry) {
     die('Not A Valid Entry Point');
 }
 
-class BaseHandlerTest extends StateCheckerPHPUnitTestCaseAbstract
+class BaseHandlerTest extends SuitePHPUnitFrameworkTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }
 
-    public function testFirst()
+    public function testFirst(): void
     {
-        $this->assertEquals(true, true);
+        self::assertEquals(true, true);
     }
 }

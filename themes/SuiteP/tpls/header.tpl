@@ -38,11 +38,7 @@
  * display the words "Powered by SugarCRM" and "Supercharged by SuiteCRM".
  */
 *}
-{if file_exists('custom/themes/SuiteP/tpls/_head.tpl')}
-    {include file="custom/themes/SuiteP/tpls/_head.tpl"}
-{else}
-    {include file="themes/SuiteP/tpls/_head.tpl"}
-{/if}
+{include file="themes/SuiteP/tpls/_head.tpl"}
 <body onMouseOut="closeMenus();">
 
 {if $AUTHENTICATED}
@@ -51,8 +47,6 @@
     </div>
 {/if}
 {literal}
-    <iframe id='ajaxUI-history-iframe' src='index.php?entryPoint=getImage&imageName=blank.png' title='empty'
-            style='display:none'></iframe>
 <input id='ajaxUI-history-field' type='hidden'>
 <script type='text/javascript'>
     if (SUGAR.ajaxUI && !SUGAR.ajaxUI.hist_loaded) {
@@ -68,5 +62,5 @@
 <div id="bootstrap-container"
      class="{if $THEME_CONFIG.display_sidebar && $smarty.cookies.sidebartoggle|default:'' != 'collapsed'}col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2{/if} main bootstrap-container">
     <div id="content" class="content">
-        <div id="pagecontent" class=".pagecontent">
+        <div id="pagecontent" class=".pagecontent" data-module="{$MODULE_NAME}">
 {/if}

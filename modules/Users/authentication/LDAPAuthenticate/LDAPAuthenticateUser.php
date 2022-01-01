@@ -79,11 +79,8 @@ class LDAPAuthenticateUser extends SugarAuthenticateUser
         }
         @ldap_set_option($ldapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
         @ldap_set_option($ldapconn, LDAP_OPT_REFERRALS, 0); // required for AD
-        // If constant is defined, set the timeout (PHP >= 5.3)
-        if (defined('LDAP_OPT_NETWORK_TIMEOUT')) {
-            // Network timeout, lower than PHP and DB timeouts
-            @ldap_set_option($ldapconn, LDAP_OPT_NETWORK_TIMEOUT, 60);
-        }
+        // Network timeout, lower than PHP and DB timeouts
+        @ldap_set_option($ldapconn, LDAP_OPT_NETWORK_TIMEOUT, 60);
 
         $bind_user = $this->ldap_rdn_lookup($name, $password);
         $GLOBALS['log']->debug("ldapauth.ldap_authenticate_user: ldap_rdn_lookup returned bind_user=" . $bind_user);
@@ -122,10 +119,10 @@ class LDAPAuthenticateUser extends SugarAuthenticateUser
             //add the group user attribute that we will compare to the group attribute for membership validation if group membership is turned on
             if (!empty($GLOBALS['ldap_config']->settings['ldap_group'])
                 && !empty($GLOBALS['ldap_config']->settings['ldap_group_user_attr'])
-                && !empty($GLOBALS['ldap_config']->settings['ldap_group_attr'])) {
-                if (!in_array($attrs, $GLOBALS['ldap_config']->settings['ldap_group_user_attr'])) {
-                    $attrs[] = $GLOBALS['ldap_config']->settings['ldap_group_user_attr'];
-                }
+                && !empty($GLOBALS['ldap_config']->settings['ldap_group_attr'])
+                && !in_array($GLOBALS['ldap_config']->settings['ldap_group_user_attr'], $attrs, false)
+            ) {
+                $attrs[] = $GLOBALS['ldap_config']->settings['ldap_group_user_attr'];
             }
 
             $GLOBALS['log']->debug(
@@ -261,7 +258,7 @@ class LDAPAuthenticateUser extends SugarAuthenticateUser
      */
     public function createUser($name)
     {
-        $user = new User();
+        $user = BeanFactory::newBean('Users');
         $user->user_name = $name;
         foreach ($this->ldapUserInfo as $key=>$value) {
             $user->$key = $value;
@@ -295,7 +292,7 @@ class LDAPAuthenticateUser extends SugarAuthenticateUser
         }
 
         global $login_error;
-        $GLOBALS['ldap_config']  = new Administration();
+        $GLOBALS['ldap_config']  = BeanFactory::newBean('Administration');
         $GLOBALS['ldap_config']->retrieveSettings('ldap');
         $GLOBALS['log']->debug("Starting user load for ". $name);
         if (empty($name) || empty($password)) {

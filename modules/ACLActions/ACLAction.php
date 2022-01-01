@@ -59,20 +59,10 @@ class ACLAction extends SugarBean
     public $new_schema = true;
     public $disable_custom_fields = true;
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function ACLAction()
+    public function __construct()
     {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        $this->__construct();
+        parent::__construct();
     }
-
 
     /**
      * static addActions($category, $type='module')
@@ -89,7 +79,7 @@ class ACLAction extends SugarBean
 
         if (isset($ACLActions[$type])) {
             foreach ($ACLActions[$type]['actions'] as $action_name => $action_def) {
-                $action = new ACLAction();
+                $action = BeanFactory::newBean('ACLActions');
 
                 $tableName = $action->table_name;
                 $actionNameQuoted = $db->quoted($action_name);
@@ -136,7 +126,7 @@ class ACLAction extends SugarBean
 
         if (isset($ACLActions[$type])) {
             foreach ($ACLActions[$type]['actions'] as $action_name => $action_def) {
-                $action = new ACLAction();
+                $action = BeanFactory::newBean('ACLActions');
 
                 $tableName = $action->table_name;
                 $actionNameQuoted = $db->quoted($action_name);
@@ -261,7 +251,7 @@ class ACLAction extends SugarBean
         $result = $db->query($query);
         $default_actions = array();
         while ($row = $db->fetchByAssoc($result)) {
-            $acl = new ACLAction();
+            $acl = BeanFactory::newBean('ACLActions');
             $acl->populateFromRow($row);
             $default_actions[] = $acl;
         }
@@ -382,7 +372,7 @@ class ACLAction extends SugarBean
                 break; //no need for default actions when a role is assigned to the user or user's group already
             }
             /* END - SECURITY GROUPS */
-            $acl = new ACLAction();
+            $acl = BeanFactory::newBean('ACLActions');
             $isOverride = false;
             $acl->populateFromRow($row);
             if (!empty($row['access_override'])) {

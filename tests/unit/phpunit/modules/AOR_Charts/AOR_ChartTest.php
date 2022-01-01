@@ -1,32 +1,32 @@
 <?php
 
 //require_once 'modules/AOR_Charts/lib/pChart/pChart.php';
-class AOR_ChartTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
-{
-    public function testAOR_Chart()
-    {
-        $this->markTestSkipped('Skipping AOR Charts Tests');
-        //execute the contructor and check for the Object type and  attributes
-        $aorChart = new AOR_Chart();
-        $this->assertInstanceOf('AOR_Chart', $aorChart);
-        $this->assertInstanceOf('Basic', $aorChart);
-        $this->assertInstanceOf('SugarBean', $aorChart);
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
 
-        $this->assertAttributeEquals('AOR_Charts', 'module_dir', $aorChart);
-        $this->assertAttributeEquals('AOR_Chart', 'object_name', $aorChart);
-        $this->assertAttributeEquals('aor_charts', 'table_name', $aorChart);
-        $this->assertAttributeEquals(true, 'new_schema', $aorChart);
-        $this->assertAttributeEquals(true, 'disable_row_level_security', $aorChart);
-        $this->assertAttributeEquals(true, 'importable', $aorChart);
+class AOR_ChartTest extends SuitePHPUnitFrameworkTestCase
+{
+    public function testAOR_Chart(): void
+    {
+        self::markTestSkipped('Skipping AOR Charts Tests');
+        // Execute the constructor and check for the Object type and  attributes
+        $aorChart = BeanFactory::newBean('AOR_Charts');
+        self::assertInstanceOf('AOR_Chart', $aorChart);
+        self::assertInstanceOf('Basic', $aorChart);
+        self::assertInstanceOf('SugarBean', $aorChart);
+
+        self::assertEquals('AOR_Charts', $aorChart->module_dir);
+        self::assertEquals('AOR_Chart', $aorChart->object_name);
+        self::assertEquals('aor_charts', $aorChart->table_name);
+        self::assertEquals(true, $aorChart->new_schema);
+        self::assertEquals(true, $aorChart->disable_row_level_security);
+        self::assertEquals(true, $aorChart->importable);
     }
 
-    public function testsave_lines()
+    public function testsave_lines(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $this->markTestSkipped('Skipping AOR Charts Tests');
-        
-        $aorChart = new AOR_Chart();
+        self::markTestSkipped('Skipping AOR Charts Tests');
+
+        $aorChart = BeanFactory::newBean('AOR_Charts');
 
         //preset the required data
         $post = array();
@@ -38,24 +38,22 @@ class AOR_ChartTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
 
         $postKey = 'chart';
 
-        $bean = new AOR_Report();
+        $bean = BeanFactory::newBean('AOR_Reports');
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $result = $aorChart->save_lines($post, $bean, $postKey);
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
-        
-        // clean up
     }
 
-    public function testbuildChartImageBar()
+    public function testbuildChartImageBar(): void
     {
-        $this->markTestSkipped('Skipping AOR Charts Tests');
-        
-        $aorChart = new AOR_Chart();
+        self::markTestSkipped('Skipping AOR Charts Tests');
+
+        $aorChart = BeanFactory::newBean('AOR_Charts');
 
         $chartData = new pData();
         $chartData->addPoints(10, 'data');
@@ -64,22 +62,22 @@ class AOR_ChartTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         //execute with recordImageMap true and verify that the chartPicture is changed
         $chartPicture = new pImage(700, 700, $chartData);
         $aorChart->buildChartImageBar($chartPicture, true);
-        $this->assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
+        self::assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
 
         //execute with recordImageMap false and verify that the chartPicture is changed
         $chartPicture = new pImage(700, 700, $chartData);
         $aorChart->buildChartImageBar($chartPicture, false);
-        $this->assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
+        self::assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
 
         unset($chartData);
         unset($chartPicture);
     }
 
-    public function testbuildChartImagePie()
+    public function testbuildChartImagePie(): void
     {
-        $this->markTestSkipped('Skipping AOR Charts Tests');
-        
-        $aorChart = new AOR_Chart();
+        self::markTestSkipped('Skipping AOR Charts Tests');
+
+        $aorChart = BeanFactory::newBean('AOR_Charts');
 
         $chartData = new pData();
         $chartData->addPoints(10, 'data');
@@ -88,22 +86,22 @@ class AOR_ChartTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         //execute with recordImageMap false  and verify that the chartPicture is changed
         $chartPicture = new pImage(700, 700, $chartData);
         $aorChart->buildChartImagePie($chartPicture, $chartData, array(array('x' => 10), array('x' => 20)), 700, 700, 'x', false);
-        $this->assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
+        self::assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
 
         //execute with recordImageMap true and verify that the chartPicture is changed
         $chartPicture = new pImage(700, 700, $chartData);
         $aorChart->buildChartImagePie($chartPicture, $chartData, array(array('x' => 10), array('x' => 20)), 700, 700, 'x', true);
-        $this->assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
+        self::assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
 
         unset($chartData);
         unset($chartPicture);
     }
 
-    public function testbuildChartImageLine()
+    public function testbuildChartImageLine(): void
     {
-        $this->markTestSkipped('Skipping AOR Charts Tests');
-        
-        $aorChart = new AOR_Chart();
+        self::markTestSkipped('Skipping AOR Charts Tests');
+
+        $aorChart = BeanFactory::newBean('AOR_Charts');
 
         $chartData = new pData();
         $chartData->addPoints(10, 'data');
@@ -112,22 +110,22 @@ class AOR_ChartTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         //execute with recordImageMap true  and verify that the chartPicture is changed
         $chartPicture = new pImage(700, 700, $chartData);
         $aorChart->buildChartImageLine($chartPicture, true);
-        $this->assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
+        self::assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
 
         //execute with recordImageMap false  and verify that the chartPicture is changed
         $chartPicture = new pImage(700, 700, $chartData);
         $aorChart->buildChartImageLine($chartPicture, false);
-        $this->assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
+        self::assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
 
         unset($chartData);
         unset($chartPicture);
     }
 
-    public function testbuildChartImageRadar()
+    public function testbuildChartImageRadar(): void
     {
-        $this->markTestSkipped('Skipping AOR Charts Tests');
-        
-        $aorChart = new AOR_Chart();
+        self::markTestSkipped('Skipping AOR Charts Tests');
+
+        $aorChart = BeanFactory::newBean('AOR_Charts');
 
         //preset the required objects and properties
         $chartData = new pData();
@@ -147,27 +145,27 @@ class AOR_ChartTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         $chartPicture = new pImage($imageWidth, $imageHeight, $chartData);
         $chartPicture->setGraphArea(60, 60, $imageWidth - 60, $imageHeight - 100);
         $aorChart->buildChartImageRadar($chartPicture, $chartData, true);
-        $this->assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
+        self::assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
 
         //execute with recordImageMap false and verify that the chartPicture is changed
         $chartPicture = new pImage(700, 700, $chartData);
         $chartPicture->setGraphArea(60, 60, $imageWidth - 60, $imageHeight - 100);
         $aorChart->buildChartImageRadar($chartPicture, $chartData, false);
-        $this->assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
+        self::assertNotEquals($chartPicture, new pImage(700, 700, $chartData));
 
         unset($chartData);
         unset($chartPicture);
     }
 
-    public function testbuildChartImage()
+    public function testbuildChartImage(): void
     {
-        $this->markTestSkipped('Skipping testing chart image');
+        self::markTestSkipped('Skipping testing chart image');
 
         global $current_user;
 
         $current_user->id = '1';
 
-        $aorChart = new AOR_Chart();
+        $aorChart = BeanFactory::newBean('AOR_Charts');
 
         //preset the required objects and properties
 
@@ -183,28 +181,28 @@ class AOR_ChartTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         //execute the method and verify it returns expected results
         $aorChart->type = 'bar';
         $result = $aorChart->buildChartImage($reportData, $fields);
-        $this->assertEquals('data:image/png;base64,', $result);
+        self::assertEquals('data:image/png;base64,', $result);
 
         //execute the method and verify it returns expected results
         $aorChart->type = 'Line';
         $result = $aorChart->buildChartImage($reportData, $fields);
-        $this->assertEquals('', $result);
+        self::assertEquals('', $result);
 
         //execute the method and verify it returns expected results
         $aorChart->type = 'pie';
         $result = $aorChart->buildChartImage($reportData, $fields);
-        $this->assertEquals('data:image/png;base64,', $result);
+        self::assertEquals('data:image/png;base64,', $result);
 
         //execute the method and verify it returns expected results
         $aorChart->type = 'radar';
         $result = $aorChart->buildChartImage($reportData, $fields, true);
-        $this->assertEquals('data:image/png;base64,', $result);
+        self::assertEquals('data:image/png;base64,', $result);
     }
 
-    public function testbuildChartHTML()
+    public function testbuildChartHTML(): void
     {
-        $this->markTestSkipped('Skipping testing chart HTML');
-        $aorChart = new AOR_Chart();
+        self::markTestSkipped('Skipping testing chart HTML');
+        $aorChart = BeanFactory::newBean('AOR_Charts');
 
         //preset the required objects and properties
         $aorChart->x_field = 'x';
@@ -221,11 +219,11 @@ class AOR_ChartTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         //test with type CHART_TYPE_PCHART and verify it returns expected results
         $expected = "<img id='_img' src='data:image/png;base64,'><script>\nSUGAR.util.doWhen(\"typeof addImage != 'undefined'\", function(){\n    addImage('_img','_img_map','index.php?module=AOR_Charts&action=getImageMap&to_pdf=1&imageMapId=0');\n});\n</script>";
         $result = $aorChart->buildChartHTML($reportData, $fields);
-        $this->assertSame($expected, $result);
+        self::assertSame($expected, $result);
 
         //test with type CHART_TYPE_CHARTJS verify it returns expected results
         $expected = "<h3></h3><canvas id='chart' width='400' height='400'></canvas>        <script>\n        \$(document).ready(function(){\n            SUGAR.util.doWhen(\"typeof Chart != 'undefined'\", function(){\n                var data = {\"labels\":[\"10 [a]\",\"20 [e]\"],\"datasets\":[{\"fillColor\":\"rgba(151,187,205,0.2)\",\"strokeColor\":\"rgba(151,187,205,1)\",\"pointColor\":\"rgba(151,187,205,1)\",\"pointStrokeColor\":\"#fff\",\"pointHighlightFill\":\"#fff\",\"pointHighlightStroke\":\"rgba(151,187,205,1)4\",\"data\":[10,20]}]};\n                var ctx = document.getElementById(\"chart\").getContext(\"2d\");\n                console.log('Creating new chart');\n                var config = [];\n                var chart = new Chart(ctx).Bar(data, config);\n                var legend = chart.generateLegend();\n                $('#chart').after(legend);\n            });\n        });\n        </script>";
         $result = $aorChart->buildChartHTML($reportData, $fields, 0, AOR_Report::CHART_TYPE_CHARTJS);
-        $this->assertSame($expected, $result);
+        self::assertSame($expected, $result);
     }
 }

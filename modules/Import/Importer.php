@@ -108,7 +108,7 @@ class Importer
         $this->ifs = $this->getFieldSanitizer();
 
         //Get the default user currency
-        $this->defaultUserCurrency = new Currency();
+        $this->defaultUserCurrency = BeanFactory::newBean('Currencies');
         $this->defaultUserCurrency->retrieve('-99');
 
         //Get our import column definitions
@@ -501,7 +501,7 @@ class Importer
         * Bug 34854: Added all conditions besides the empty check on date modified.
         */
         if ((!empty($focus->new_with_id) && !empty($focus->date_modified)) ||
-             (empty($focus->new_with_id) && $timedate->to_db($focus->date_modified) != $timedate->to_db($timedate->to_display_date_time($focus->fetched_row['date_modified'])))
+             (is_array($focus->fetched_row) && empty($focus->new_with_id) && $timedate->to_db($focus->date_modified) != $timedate->to_db($timedate->to_display_date_time($focus->fetched_row['date_modified'])))
         ) {
             $focus->update_date_modified = false;
         }
@@ -580,7 +580,7 @@ class Importer
 
         $firstrow    = json_decode(html_entity_decode($_REQUEST['firstrow']), true);
         $mappingValsArr = $this->importColumns;
-        $mapping_file = new ImportMap();
+        $mapping_file = BeanFactory::newBean('Import_1');
         if (isset($_REQUEST['has_header']) && $_REQUEST['has_header'] == 'on') {
             $header_to_field = array();
             foreach ($this->importColumns as $pos => $field_name) {
@@ -723,7 +723,7 @@ class Importer
             $ifs->$field = $this->importSource->$fieldKey;
         }
 
-        $currency = new Currency();
+        $currency = BeanFactory::newBean('Currencies');
         $currency->retrieve($this->importSource->importlocale_currency);
         $ifs->currency_symbol = $currency->symbol;
 
@@ -749,7 +749,7 @@ class Importer
      */
     protected function _undoCreatedBeans(array $ids)
     {
-        $focus = new UsersLastImport();
+        $focus = BeanFactory::newBean('Import_2');
         foreach ($ids as $id) {
             $focus->undoById($id);
         }

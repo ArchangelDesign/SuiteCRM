@@ -1,43 +1,34 @@
 <?php
 
-class DocumentRevisionTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
+
+class DocumentRevisionTest extends SuitePHPUnitFrameworkTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         global $current_user;
         get_sugar_config_defaults();
-        $current_user = new User();
+        $current_user = BeanFactory::newBean('Users');
     }
 
-    public function testDocumentRevision()
+    public function testDocumentRevision(): void
     {
-        //execute the contructor and check for the Object type and  attributes
-        $documentRevision = new DocumentRevision();
-        $this->assertInstanceOf('DocumentRevision', $documentRevision);
-        $this->assertInstanceOf('SugarBean', $documentRevision);
+        // Execute the constructor and check for the Object type and  attributes
+        $documentRevision = BeanFactory::newBean('DocumentRevisions');
+        self::assertInstanceOf('DocumentRevision', $documentRevision);
+        self::assertInstanceOf('SugarBean', $documentRevision);
 
-        $this->assertAttributeEquals('DocumentRevisions', 'module_dir', $documentRevision);
-        $this->assertAttributeEquals('DocumentRevision', 'object_name', $documentRevision);
-        $this->assertAttributeEquals('document_revisions', 'table_name', $documentRevision);
-        $this->assertAttributeEquals(true, 'new_schema', $documentRevision);
+        self::assertEquals('DocumentRevisions', $documentRevision->module_dir);
+        self::assertEquals('DocumentRevision', $documentRevision->object_name);
+        self::assertEquals('document_revisions', $documentRevision->table_name);
+        self::assertEquals(true, $documentRevision->new_schema);
     }
 
-    public function testSaveAndRetrieve()
+    public function testSaveAndRetrieve(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $state->pushTable('aod_index');
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        $state->pushTable('tracker');
-        $state->pushGlobals();
-        
-        
-
-        $documentRevision = new DocumentRevision();
+        $documentRevision = BeanFactory::newBean('DocumentRevisions');
 
         $documentRevision->document_id = '1';
         $documentRevision->doc_id = '1';
@@ -48,274 +39,140 @@ class DocumentRevisionTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         $documentRevision->save();
 
         //test for record ID to verify that record is saved
-        $this->assertTrue(isset($documentRevision->id));
-        $this->assertEquals(36, strlen($documentRevision->id));
+        self::assertTrue(isset($documentRevision->id));
+        self::assertEquals(36, strlen($documentRevision->id));
 
         //test document retrieve method
         $docRev = $documentRevision->retrieve($documentRevision->id);
-        $this->assertEquals('1', $docRev->document_id);
-        $this->assertEquals('1', $docRev->doc_id);
-        $this->assertEquals('text', $docRev->doc_type);
-        $this->assertEquals('test', $docRev->filename);
-        $this->assertEquals('ext', $docRev->file_ext);
+        self::assertEquals('1', $docRev->document_id);
+        self::assertEquals('1', $docRev->doc_id);
+        self::assertEquals('text', $docRev->doc_type);
+        self::assertEquals('test', $docRev->filename);
+        self::assertEquals('ext', $docRev->file_ext);
 
         //mark the record as deleted and verify that this record cannot be retrieved anymore.
         $docRev->mark_deleted($docRev->id);
         $result = $docRev->retrieve($docRev->id);
-        $this->assertEquals(null, $result);
-        
-        // clean up
-        $state->popGlobals();
-        $state->popTable('tracker');
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
-        $state->popTable('aod_index');
+        self::assertEquals(null, $result);
     }
 
-    public function testget_summary_text()
+    public function testget_summary_text(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('aod_index');
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        
-        
-        $documentRevision = new DocumentRevision();
+        $documentRevision = BeanFactory::newBean('DocumentRevisions');
 
         //test without setting name
-        $this->assertEquals(null, $documentRevision->get_summary_text());
+        self::assertEquals(null, $documentRevision->get_summary_text());
 
         //test with name set
         $documentRevision->filename = 'test';
-        $this->assertEquals('test', $documentRevision->get_summary_text());
-        
-        // clean up
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
-        $state->popTable('aod_index');
+        self::assertEquals('test', $documentRevision->get_summary_text());
     }
 
-    public function testis_authenticated()
+    public function testis_authenticated(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('aod_index');
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        
-        
-        $documentRevision = new DocumentRevision();
+        $documentRevision = BeanFactory::newBean('DocumentRevisions');
 
         //test wihout setting attributes
-        $this->assertEquals(null, $documentRevision->is_authenticated());
+        self::assertEquals(null, $documentRevision->is_authenticated());
 
         //test with attributes preset
         $documentRevision->authenticated = true;
-        $this->assertEquals(true, $documentRevision->is_authenticated());
-        
-        // clean up
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
-        $state->popTable('aod_index');
+        self::assertEquals(true, $documentRevision->is_authenticated());
     }
 
-    public function testfill_in_additional_list_fields()
+    public function testfill_in_additional_list_fields(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $state->pushTable('aod_index');
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        
-        $documentRevision = new DocumentRevision();
+        $documentRevision = BeanFactory::newBean('DocumentRevisions');
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $documentRevision->fill_in_additional_list_fields();
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
-        
-        // clean up
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
-        $state->popTable('aod_index');
     }
 
-    public function testfill_in_additional_detail_fields()
+    public function testfill_in_additional_detail_fields(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        
-        $documentRevision = new DocumentRevision();
+        $documentRevision = BeanFactory::newBean('DocumentRevisions');
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $documentRevision->fill_in_additional_detail_fields();
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
-        
-        // clean up
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
     }
 
-    public function testgetDocumentRevisionNameForDisplay()
+    public function testgetDocumentRevisionNameForDisplay(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        
-        $documentRevision = new DocumentRevision();
+        $documentRevision = BeanFactory::newBean('DocumentRevisions');
 
         //test wihout setting attributes
         $result = $documentRevision->getDocumentRevisionNameForDisplay();
-        $this->assertEquals('.', $result);
+        self::assertEquals('.', $result);
 
         //test with attributes preset
         $documentRevision->filename = 'test.ext';
         $documentRevision->revision = 1;
         $result = $documentRevision->getDocumentRevisionNameForDisplay();
-        $this->assertEquals('-Revision_1.ext', $result);
-        
-        // clean up
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
+        self::assertEquals('-Revision_1.ext', $result);
     }
 
-    public function testfill_document_name_revision()
+    public function testfill_document_name_revision(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        
-        $documentRevision = new DocumentRevision();
+        $documentRevision = BeanFactory::newBean('DocumentRevisions');
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $documentRevision->fill_document_name_revision('dummy_id');
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
-        
-        // clean up
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
     }
 
-    public function testlist_view_parse_additional_sections()
+    public function testlist_view_parse_additional_sections(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        
-        $documentRevision = new DocumentRevision();
-        
+        $documentRevision = BeanFactory::newBean('DocumentRevisions');
+
         $xTemplateSection = null;
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $ss = new Sugar_Smarty();
             $documentRevision->list_view_parse_additional_sections($ss, $xTemplateSection);
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
-        
-        // clean up
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
     }
 
-    public function testget_list_view_data()
+    public function testget_list_view_data(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        
-        
-        $documentRevision = new DocumentRevision();
-        $result = $documentRevision->get_list_view_data();
-        $this->assertEquals(array('DELETED' => 0), $result);
-        
-        // clean up
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
+        $result = BeanFactory::newBean('DocumentRevisions')->get_list_view_data();
+        self::assertEquals(array('DELETED' => 0), $result);
     }
 
-    public function testget_document_revision_name()
+    public function testget_document_revision_name(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        
-        $documentRevision = new DocumentRevision();
-        $result = $documentRevision->get_document_revision_name(1);
-        $this->assertEquals(null, $result);
-        
-        // clean up
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
+        $result = BeanFactory::newBean('DocumentRevisions')->get_document_revision_name(1);
+        self::assertEquals(null, $result);
     }
 
-    public function testget_document_revisions()
+    public function testget_document_revisions(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        
-        $documentRevision = new DocumentRevision();
-        $results = $documentRevision->get_document_revisions(1);
-        $this->assertTrue(is_array($results));
-        
-        // clean up
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
+        $results = BeanFactory::newBean('DocumentRevisions')->get_document_revisions(1);
+        self::assertIsArray($results);
     }
 
-    public function testbean_implements()
+    public function testbean_implements(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('cron_remove_documents');
-        $state->pushTable('document_revisions');
-        
-        $documentRevision = new DocumentRevision();
-        $this->assertEquals(false, $documentRevision->bean_implements('')); //test with blank value
-        $this->assertEquals(false, $documentRevision->bean_implements('test')); //test with invalid value
-        $this->assertEquals(true, $documentRevision->bean_implements('FILE')); //test with valid value
-        
-        // clean up
-        $state->popTable('document_revisions');
-        $state->popTable('cron_remove_documents');
-        $state->popTable('aod_indexevent');
+        $documentRevision = BeanFactory::newBean('DocumentRevisions');
+        self::assertEquals(false, $documentRevision->bean_implements('')); //test with blank value
+        self::assertEquals(false, $documentRevision->bean_implements('test')); //test with invalid value
+        self::assertEquals(true, $documentRevision->bean_implements('FILE')); //test with valid value
     }
 }

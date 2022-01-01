@@ -74,19 +74,7 @@ class Relationship extends SugarBean
         parent::__construct();
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function Relationship()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
+
 
 
     /*returns true if the relationship is self referencing. equality check is performed for both table and
@@ -208,8 +196,6 @@ class Relationship extends SugarBean
         if (empty($GLOBALS['relationships'])) {
             $this->load_relationship_meta();
         }
-
-        //		_ppd($GLOBALS['relationships']);
 
         if (array_key_exists($relationship_name, $GLOBALS['relationships'])) {
             foreach ($GLOBALS['relationships'][$relationship_name] as $field=>$value) {

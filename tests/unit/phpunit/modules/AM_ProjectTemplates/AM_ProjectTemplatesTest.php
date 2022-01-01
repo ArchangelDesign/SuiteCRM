@@ -1,21 +1,22 @@
 <?php
 
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
 
-class AM_ProjectTemplatesTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+class AM_ProjectTemplatesTest extends SuitePHPUnitFrameworkTestCase
 {
-    public function testAM_ProjectTemplates()
+    public function testAM_ProjectTemplates(): void
     {
-        //execute the contructor and check for the Object type and type attribute
-        $am_projectTemplate = new AM_ProjectTemplates();
-        $this->assertInstanceOf('AM_ProjectTemplates', $am_projectTemplate);
-        $this->assertInstanceOf('Basic', $am_projectTemplate);
-        $this->assertInstanceOf('SugarBean', $am_projectTemplate);
+        // Execute the constructor and check for the Object type and type attribute
+        $am_projectTemplate = BeanFactory::newBean('AM_ProjectTemplates');
+        self::assertInstanceOf('AM_ProjectTemplates', $am_projectTemplate);
+        self::assertInstanceOf('Basic', $am_projectTemplate);
+        self::assertInstanceOf('SugarBean', $am_projectTemplate);
 
-        $this->assertAttributeEquals('AM_ProjectTemplates', 'module_dir', $am_projectTemplate);
-        $this->assertAttributeEquals('AM_ProjectTemplates', 'object_name', $am_projectTemplate);
-        $this->assertAttributeEquals('am_projecttemplates', 'table_name', $am_projectTemplate);
-        $this->assertAttributeEquals(true, 'new_schema', $am_projectTemplate);
-        $this->assertAttributeEquals(true, 'disable_row_level_security', $am_projectTemplate);
-        $this->assertAttributeEquals(true, 'importable', $am_projectTemplate);
+        self::assertEquals('AM_ProjectTemplates', $am_projectTemplate->module_dir);
+        self::assertEquals('AM_ProjectTemplates', $am_projectTemplate->object_name);
+        self::assertEquals('am_projecttemplates', $am_projectTemplate->table_name);
+        self::assertEquals(true, $am_projectTemplate->new_schema);
+        self::assertEquals(true, $am_projectTemplate->disable_row_level_security);
+        self::assertEquals(true, $am_projectTemplate->importable);
     }
 }

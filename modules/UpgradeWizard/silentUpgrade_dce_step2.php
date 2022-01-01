@@ -122,7 +122,7 @@ function checkResourceSettings()
             'special_query_limit' => 50000,
             'special_query_modules' =>
             array(
-              0 => 'Reports',
+              0 => 'AOR_Reports',
               1 => 'Export',
               2 => 'Import',
               3 => 'Administration',
@@ -488,13 +488,13 @@ if ($upgradeType == constant('DCE_INSTANCE')) {
     //load up entrypoint from original template
     require_once("{$argv[4]}/include/entryPoint.php");
 
-    require_once("{$newtemplate_path}/include/utils/zip_utils.php");
+    require_once("{$newtemplate_path}/include/utils/php_zip_utils.php");
     require_once("{$newtemplate_path}/modules/Administration/UpgradeHistory.php");
 
     // We need to run the silent upgrade as the admin user
     require_once("{$newtemplate_path}/modules/Users/User.php");
     global $current_user;
-    $current_user = new User();
+    $current_user = BeanFactory::newBean('Users');
     $current_user->retrieve('1');
 
 
@@ -679,8 +679,8 @@ if ($upgradeType == constant('DCE_INSTANCE')) {
         $newTB = new TabController();
 
         //make sure new modules list has a key we can reference directly
-        $newModuleList = $newTB->get_key_array($newModuleList);
-        $oldModuleList = $newTB->get_key_array($oldModuleList);
+        $newModuleList = TabController::get_key_array($newModuleList);
+        $oldModuleList = TabController::get_key_array($oldModuleList);
 
         //iterate through list and remove commonalities to get new modules
         foreach ($newModuleList as $remove_mod) {
@@ -790,7 +790,7 @@ if (isset($_SESSION['current_db_version']) && isset($_SESSION['target_db_version
         $db =& DBManagerFactory::getInstance();
         if ($ce_to_pro_ent) {
             //Also set license information
-            $admin = new Administration();
+            $admin = BeanFactory::newBean('Administration');
             $category = 'license';
             $value = 0;
             $admin->saveSetting($category, 'users', $value);

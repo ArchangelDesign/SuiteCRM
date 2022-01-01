@@ -133,19 +133,7 @@ class Meeting extends SugarBean
         }
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function Meeting()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
+
 
     /**
      * Disable edit if meeting is recurring and source is not Sugar. It should be edited only from Outlook.
@@ -208,7 +196,7 @@ class Meeting extends SugarBean
         $check_notify =(!empty($_REQUEST['send_invites']) && $_REQUEST['send_invites'] == '1') ? true : false;
         if (empty($_REQUEST['send_invites'])) {
             if (!empty($this->id)) {
-                $old_record = new Meeting();
+                $old_record = BeanFactory::newBean('Meetings');
                 $old_record->retrieve($this->id);
                 $old_assigned_user_id = $old_record->assigned_user_id;
             }
@@ -237,7 +225,7 @@ class Meeting extends SugarBean
 
         // Do any external API saving
         // Clear out the old external API stuff if we have changed types
-        if (isset($this->fetched_row) && $this->fetched_row['type'] != $this->type) {
+        if (isset($this->fetched_row) && !is_bool($this->fetched_row) && $this->fetched_row['type'] != $this->type) {
             $this->join_url = '';
             $this->host_url = '';
             $this->external_id = '';
@@ -754,7 +742,7 @@ class Meeting extends SugarBean
 
     public function get_meeting_users()
     {
-        $template = new User();
+        $template = BeanFactory::newBean('Users');
         // First, get the list of IDs.
         $query = "SELECT meetings_users.required, meetings_users.accept_status, meetings_users.user_id from meetings_users where meetings_users.meeting_id='$this->id' AND meetings_users.deleted=0";
         $GLOBALS['log']->debug("Finding linked records $this->object_name: ".$query);
@@ -762,7 +750,7 @@ class Meeting extends SugarBean
         $list = array();
 
         while ($row = $this->db->fetchByAssoc($result)) {
-            $template = new User(); // PHP 5 will retrieve by reference, always over-writing the "old" one
+            $template = BeanFactory::newBean('Users'); // PHP 5 will retrieve by reference, always over-writing the "old" one
             $record = $template->retrieve($row['user_id']);
             $template->required = $row['required'];
             $template->accept_status = $row['accept_status'];
@@ -842,7 +830,7 @@ class Meeting extends SugarBean
         }
 
         foreach ($this->users_arr as $user_id) {
-            $notify_user = new User();
+            $notify_user = BeanFactory::newBean('Users');
             $notify_user->retrieve($user_id);
             $notify_user->new_assigned_user_name = $notify_user->full_name;
             $GLOBALS['log']->info("Notifications: recipient is $notify_user->new_assigned_user_name");
@@ -850,7 +838,7 @@ class Meeting extends SugarBean
         }
 
         foreach ($this->contacts_arr as $contact_id) {
-            $notify_user = new Contact();
+            $notify_user = BeanFactory::newBean('Contacts');
             $notify_user->retrieve($contact_id);
             $notify_user->new_assigned_user_name = $notify_user->full_name;
             $GLOBALS['log']->info("Notifications: recipient is $notify_user->new_assigned_user_name");
@@ -858,7 +846,7 @@ class Meeting extends SugarBean
         }
 
         foreach ($this->leads_arr as $lead_id) {
-            $notify_user = new Lead();
+            $notify_user = BeanFactory::newBean('Leads');
             $notify_user->retrieve($lead_id);
             $notify_user->new_assigned_user_name = $notify_user->full_name;
             $GLOBALS['log']->info("Notifications: recipient is $notify_user->new_assigned_user_name");
@@ -1035,7 +1023,13 @@ function getMeetingsExternalApiDropDown($focus = null, $name = null, $value = nu
         $dictionaryMeeting = $dictionary['Meeting'];
     }
 
-    if ($dictionaryMeeting['fields']['type']['options'] != "eapm_list") {
+    // Protect against null.
+    if (
+        is_null($dictionaryMeeting)
+        || is_null($dictionaryMeeting['fields'])
+        || is_null($dictionaryMeeting['fields']['type'])
+        || $dictionaryMeeting['fields']['type']['options'] != "eapm_list"
+    ) {
         $apiList = array_merge(getMeetingTypeOptions($dictionary, $app_list_strings), $apiList);
     }
 

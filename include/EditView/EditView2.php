@@ -261,9 +261,10 @@ class EditView
                     sugar_mkdir('modules/' . $this->module . '/metadata');
                 }
 
-                $fp = sugar_fopen('modules/' . $this->module . '/metadata/' . $metadataFileName . '.php', 'w');
-                fwrite($fp, $parser->parse($htmlFile, $dictionary[$focus->object_name]['fields'], $this->module));
-                fclose($fp);
+                sugar_file_put_contents(
+                    'modules/' . $this->module . '/metadata/' . $metadataFileName . '.php',
+                    $parser->parse($htmlFile, $dictionary[$focus->object_name]['fields'], $this->module)
+                );
             }
 
             // Flag an error... we couldn't create the best guess meta-data file
@@ -901,7 +902,7 @@ class EditView
         $this->th->ss->assign('CALENDAR_FDOW', $current_user->get_first_day_of_week());
         $this->th->ss->assign('TIME_SEPARATOR', $time_separator);
 
-        $seps = get_number_seperators();
+        $seps = get_number_separators();
         $this->th->ss->assign('NUM_GRP_SEP', $seps[0]);
         $this->th->ss->assign('DEC_SEP', $seps[1]);
 

@@ -152,19 +152,7 @@ class User extends Person implements EmailInterface
         }
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function User()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
+
 
     protected function _loadUserPreferencesFocus()
     {
@@ -623,7 +611,7 @@ class User extends Person implements EmailInterface
         $isUpdate = !empty($this->id) && !$this->new_with_id;
 
         //No SMTP server is set up Error.
-        $admin = new Administration();
+        $admin = BeanFactory::newBean('Administration');
         $smtp_error = $admin->checkSmtpError();
 
         // only admin user can change 2 factor authentication settings
@@ -678,6 +666,10 @@ class User extends Person implements EmailInterface
             $this->portal_only = 0;
         }
 
+        // If the current user is not an admin, do not allow them to set the admin flag to true.
+        if (!is_admin($current_user)) {
+            $this->is_admin = 0;
+        }
 
         // set some default preferences when creating a new user
         $setNewUserPreferences = empty($this->id) || !empty($this->new_with_id);
@@ -1642,7 +1634,7 @@ EOQ;
         // First, get the list of IDs.
         $query = "SELECT meeting_id as id from meetings_users where user_id='$this->id' AND deleted=0";
 
-        $meeting = new Meeting();
+        $meeting = BeanFactory::newBean('Meetings');
         return $this->build_related_list($query, $meeting);
     }
 
@@ -1651,7 +1643,7 @@ EOQ;
         // First, get the list of IDs.
         $query = "SELECT call_id as id from calls_users where user_id='$this->id' AND deleted=0";
 
-        return $this->build_related_list($query, new Call());
+        return $this->build_related_list($query, BeanFactory::newBean('Calls'));
     }
 
     /**
@@ -1755,7 +1747,7 @@ EOQ;
 
     public function getSystemDefaultNameAndEmail()
     {
-        $email = new Email();
+        $email = BeanFactory::newBean('Emails');
         $return = $email->getSystemDefaultEmail();
         $prefAddr = $return['email'];
         $fullName = $return['name'];
@@ -1790,7 +1782,7 @@ EOQ;
     {
         $user = $this;
         if (!empty($id)) {
-            $user = new User();
+            $user = BeanFactory::newBean('Users');
             $user->retrieve($id);
         }
 
@@ -1935,7 +1927,7 @@ EOQ;
 
         $ret1 = '';
         $ret2 = '';
-        for ($i = 0; $i < strlen($macro); $i++) {
+        for ($i = 0, $iMax = strlen($macro); $i < $iMax; $i++) {
             if (array_key_exists($macro[$i], $format)) {
                 $ret1 .= "<i>" . $format[$macro[$i]] . "</i>";
                 $ret2 .= "<i>" . $name[$macro[$i]] . "</i>";
@@ -2021,6 +2013,16 @@ EOQ;
         }
 
         return $myModules;
+    }
+
+    /**
+     * Is user enabled
+     *
+     * @return bool
+     */
+    public function isEnabled()
+    {
+        return ($this->status !== 'Inactive') && ($this->employee_status === 'Active');
     }
 
     /**
@@ -2272,7 +2274,7 @@ EOQ;
             'message' => ''
         );
 
-        $emailTemp = new EmailTemplate();
+        $emailTemp = BeanFactory::newBean('EmailTemplates');
         $emailTemp->disable_row_level_security = true;
         if ($emailTemp->retrieve($templateId) == '') {
             $result['message'] = $mod_strings['LBL_EMAIL_TEMPLATE_MISSING'];
@@ -2303,9 +2305,8 @@ EOQ;
 
         $itemail = $this->emailAddress->getPrimaryAddress($this);
         //retrieve IT Admin Email
-        //_ppd( $emailTemp->body_html);
         //retrieve email defaults
-        $emailObj = new Email();
+        $emailObj = BeanFactory::newBean('Emails');
         $defaults = $emailObj->getSystemDefaultEmail();
         require_once('include/SugarPHPMailer.php');
         $mail = new SugarPHPMailer();

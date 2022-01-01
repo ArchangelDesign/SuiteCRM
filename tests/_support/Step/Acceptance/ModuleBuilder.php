@@ -11,7 +11,7 @@ class ModuleBuilder extends Administration
      * @param string $moduleType
      * @see SugarObjectType
      */
-    public function createModule($packageName, $moduleName, $moduleType)
+    public function createModule($packageName, $moduleName, $moduleType): void
     {
         $I = $this;
 
@@ -76,7 +76,7 @@ class ModuleBuilder extends Administration
             $I->waitForElementVisible('[name="name"]');
 
             $I->deployPackage($packageName);
-            // Redeploy @TODO seperate this out to new test
+            // Redeploy @TODO separate this out to new test
             $I->deployPackage($packageName, true);
         } else {
             $I->getScenario()->skip($packageName . ' already exists. Please remove package and module manually.');
@@ -86,7 +86,7 @@ class ModuleBuilder extends Administration
     /**
      * @param string $packageName
      */
-    public function selectPackage($packageName)
+    public function selectPackage($packageName): void
     {
         $I = $this;
 
@@ -103,7 +103,7 @@ class ModuleBuilder extends Administration
      * @param string $packageName
      * @param string $moduleName
      */
-    public function selectModule($packageName, $moduleName)
+    public function selectModule($packageName, $moduleName): void
     {
         $I = $this;
 
@@ -118,10 +118,11 @@ class ModuleBuilder extends Administration
         $I->waitForElementVisible(['name' => 'savebtn']);
     }
 
-    public function closePopupSuccess()
+    public function closePopupSuccess(): void
     {
         $I = $this;
-        $I->waitForElementVisible('#sugarMsgWindow_mask');
+        $I->wait(1);
+        $I->executeJS('return typeof document.getElementById("sugarMsgWindow") !== "undefined";');
         $I->waitForText('This operation is completed successfully', null, '#sugarMsgWindow_c');
         $I->click('.container-close');
     }
@@ -131,7 +132,7 @@ class ModuleBuilder extends Administration
      * @param boolean $packageExists
      *
      */
-    public function deployPackage($packageName, $packageExists = false)
+    public function deployPackage($packageName, $packageExists = false): void
     {
         $I = $this;
 

@@ -71,19 +71,7 @@ class SugarFeed extends Basic
         parent::__construct();
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function SugarFeed()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
+
 
 
     public static function activateModuleFeed($module, $updateDB = true)
@@ -102,7 +90,7 @@ class SugarFeed extends Basic
             }
         }
         if ($updateDB == true) {
-            $admin = new Administration();
+            $admin = BeanFactory::newBean('Administration');
             $admin->saveSetting('sugarfeed', 'module_'.$admin->db->quote($module), '1');
         }
     }
@@ -124,7 +112,7 @@ class SugarFeed extends Basic
         }
 
         if ($updateDB == true) {
-            $admin = new Administration();
+            $admin = BeanFactory::newBean('Administration');
             $admin->saveSetting('sugarfeed', 'module_'.$admin->db->quote($module), '0');
         }
     }
@@ -188,7 +176,7 @@ class SugarFeed extends Basic
 
         // Gotta go looking for it
 
-        $admin = new Administration();
+        $admin = BeanFactory::newBean('Administration');
         $admin->retrieveSettings();
 
         $feedModules = array();
@@ -276,7 +264,7 @@ class SugarFeed extends Basic
         $link_type=false,
         $link_url=false
         ) {
-        $feed = new SugarFeed();
+        $feed = BeanFactory::newBean('SugarFeed');
         if ((empty($text) && empty($link_url)) || !$feed->ACLAccess('save', true)) {
             $GLOBALS['log']->error('Unable to save SugarFeed record (missing data or no ACL access)');
             return;

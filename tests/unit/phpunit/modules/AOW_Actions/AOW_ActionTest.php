@@ -1,42 +1,38 @@
 <?php
 
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
 
-class AOW_ActionTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+class AOW_ActionTest extends SuitePHPUnitFrameworkTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         global $current_user;
         get_sugar_config_defaults();
-        $current_user = new User();
+        $current_user = BeanFactory::newBean('Users');
     }
 
-    public function testAOW_Action()
+    public function testAOW_Action(): void
     {
+        // Execute the constructor and check for the Object type and  attributes
+        $aowAction = BeanFactory::newBean('AOW_Actions');
+        self::assertInstanceOf('AOW_Action', $aowAction);
+        self::assertInstanceOf('Basic', $aowAction);
+        self::assertInstanceOf('SugarBean', $aowAction);
 
-        //execute the contructor and check for the Object type and  attributes
-        $aowAction = new AOW_Action();
-        $this->assertInstanceOf('AOW_Action', $aowAction);
-        $this->assertInstanceOf('Basic', $aowAction);
-        $this->assertInstanceOf('SugarBean', $aowAction);
-
-        $this->assertAttributeEquals('AOW_Actions', 'module_dir', $aowAction);
-        $this->assertAttributeEquals('AOW_Action', 'object_name', $aowAction);
-        $this->assertAttributeEquals('aow_actions', 'table_name', $aowAction);
-        $this->assertAttributeEquals(true, 'new_schema', $aowAction);
-        $this->assertAttributeEquals(true, 'disable_row_level_security', $aowAction);
-        $this->assertAttributeEquals(false, 'importable', $aowAction);
-        $this->assertAttributeEquals(false, 'tracker_visibility', $aowAction);
+        self::assertEquals('AOW_Actions', $aowAction->module_dir);
+        self::assertEquals('AOW_Action', $aowAction->object_name);
+        self::assertEquals('aow_actions', $aowAction->table_name);
+        self::assertEquals(true, $aowAction->new_schema);
+        self::assertEquals(true, $aowAction->disable_row_level_security);
+        self::assertEquals(false, $aowAction->importable);
+        self::assertEquals(false, $aowAction->tracker_visibility);
     }
 
-    public function testsave_lines()
+    public function testsave_lines(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('aow_actions');
-
-        // test
-        $aowAction = new AOW_Action();
+        $aowAction = BeanFactory::newBean('AOW_Actions');
 
         //populate required values
         $post_data = array();
@@ -45,29 +41,26 @@ class AOW_ActionTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         $post_data['param'] = array(array('param1' => 'value'), array('value' => array('param2' => 'value')));
 
         //create parent bean
-        $aowWorkFlow = new AOW_WorkFlow();
+        $aowWorkFlow = BeanFactory::newBean('AOW_WorkFlow');
         $aowWorkFlow->id = 1;
 
         $aowAction->save_lines($post_data, $aowWorkFlow);
 
         //get the linked beans and verify if records created
         $aow_actions = $aowWorkFlow->get_linked_beans('aow_actions', $aowWorkFlow->object_name);
-        $this->assertEquals(count($post_data['action']), count($aow_actions));
+        self::assertCount(count($post_data['action']), $aow_actions);
 
         //cleanup afterwards
         foreach ($aow_actions as $lineItem) {
             $lineItem->mark_deleted($lineItem->id);
         }
-        
-        // clean up
-        $state->popTable('aow_actions');
     }
 
-    public function testbean_implements()
+    public function testbean_implements(): void
     {
-        $aowAction = new AOW_Action();
-        $this->assertEquals(false, $aowAction->bean_implements('')); //test with blank value
-        $this->assertEquals(false, $aowAction->bean_implements('test')); //test with invalid value
-        $this->assertEquals(false, $aowAction->bean_implements('ACL')); //test with valid value
+        $aowAction = BeanFactory::newBean('AOW_Actions');
+        self::assertEquals(false, $aowAction->bean_implements('')); //test with blank value
+        self::assertEquals(false, $aowAction->bean_implements('test')); //test with invalid value
+        self::assertEquals(false, $aowAction->bean_implements('ACL')); //test with valid value
     }
 }

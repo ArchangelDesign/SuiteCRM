@@ -562,7 +562,14 @@
                         {foreach from=$GCLS item=GCL name=gcl key=gcl_key}
                             <li role="presentation">
                                 <a id="{$gcl_key}_link"
-                                   href="{$GCL.URL}"{if !empty($GCL.ONCLICK)} onclick="{$GCL.ONCLICK}"{/if}>{$GCL.LABEL}</a>
+                                   href="{$GCL.URL}"
+                                   {if !empty($GCL.ONCLICK)} 
+                                   onclick="{$GCL.ONCLICK}"
+                                   {/if}
+                                   {if !empty($GCL.TARGET)} 
+                                   target="{$GCL.TARGET}"
+                                   {/if}
+                                   >{$GCL.LABEL}</a>
                             </li>
                         {/foreach}
                         <li role="presentation"><a role="menuitem" id="logout_link" href='{$LOGOUT_LINK}'
@@ -645,7 +652,14 @@
                         {foreach from=$GCLS item=GCL name=gcl key=gcl_key}
                             <li role="presentation">
                                 <a id="{$gcl_key}_link"
-                                   href="{$GCL.URL}"{if !empty($GCL.ONCLICK)} onclick="{$GCL.ONCLICK}"{/if}>{$GCL.LABEL}</a>
+                                   href="{$GCL.URL}"
+                                   {if !empty($GCL.ONCLICK)} 
+                                   onclick="{$GCL.ONCLICK}"
+                                   {/if}
+                                   {if !empty($GCL.TARGET)} 
+                                   target="{$GCL.TARGET}"
+                                   {/if}
+                                   >{$GCL.LABEL}</a>
                             </li>
                         {/foreach}
                         <li role="presentation"><a role="menuitem" id="logout_link" href='{$LOGOUT_LINK}'
@@ -716,7 +730,7 @@
                 <li id="globalLinks" class="dropdown nav navbar-nav globalLinks-desktop">
                     <button id="with-label" class="dropdown-toggle user-menu-button" title="{$CURRENT_USER}"data-toggle="dropdown" aria-expanded="true">
                         <span class="suitepicon suitepicon-action-current-user"></span>
-                        <span>{$CURRENT_USER}</span>
+                        <span class="globallabel-user">{$CURRENT_USER}</span>
                         <span class="suitepicon suitepicon-action-caret"></span>
                     </button>
                     <ul class="dropdown-menu user-dropdown user-menu" role="menu" aria-labelledby="with-label">
@@ -728,7 +742,14 @@
                         {foreach from=$GCLS item=GCL name=gcl key=gcl_key}
                             <li role="presentation">
                                 <a id="{$gcl_key}_link"
-                                   href="{$GCL.URL}"{if !empty($GCL.ONCLICK)} onclick="{$GCL.ONCLICK}"{/if}>{$GCL.LABEL}</a>
+                                   href="{$GCL.URL}"
+                                   {if !empty($GCL.ONCLICK)} 
+                                   onclick="{$GCL.ONCLICK}"
+                                   {/if}
+                                   {if !empty($GCL.TARGET)}
+                                   target="{$GCL.TARGET}"
+                                   {/if}
+                                   >{$GCL.LABEL}</a>
                             </li>
                         {/foreach}
                         <li role="presentation"><a role="menuitem" id="logout_link" href='{$LOGOUT_LINK}'

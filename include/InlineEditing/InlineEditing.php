@@ -126,6 +126,10 @@ function getEditFieldHTML($module, $fieldname, $aow_field, $view = 'EditView', $
         if (isset($vardef['name']) && ($vardef['name'] == 'date_modified')) {
             $vardef['name'] = 'aow_temp_date';
         }
+        
+        if (isset($vardef['help'])) {
+            $vardef['help'] = htmlspecialchars($vardef['help'],ENT_QUOTES);
+        }
 
         // load SugarFieldHandler to render the field tpl file
         static $sfh;
@@ -285,7 +289,7 @@ function getEditFieldHTML($module, $fieldname, $aow_field, $view = 'EditView', $
         if ($currency_id != '' && !stripos($fieldname, '_USD')) {
             $userCurrencyId = $current_user->getPreference('currency');
             if ($currency_id != $userCurrencyId) {
-                $currency = new Currency();
+                $currency = BeanFactory::newBean('Currencies');
                 $currency->retrieve($currency_id);
                 $value = $currency->convertToDollar($value);
                 $currency->retrieve($userCurrencyId);
@@ -362,6 +366,10 @@ function saveField($field, $id, $module, $value)
         }
 
         if (($bean->ACLAccess("edit") || is_admin($current_user)) && $enabled) {
+            $bean->in_workflow=true;
+            if ($field == 'email1') {
+                $bean->email1_set_in_workflow=true;
+            }
             if (!$bean->save($check_notify)) {
                 $GLOBALS['log']->fatal("Saving probably failed or bean->save() method did not return with a positive result.");
             }
@@ -395,7 +403,7 @@ function getDisplayValue($bean, $field, $method = "save")
 
 function formatDisplayValue($bean, $value, $vardef, $method = "save")
 {
-    global $app_list_strings, $timedate;
+    global $app_list_strings, $timedate, $current_user;
 
     //Fake the params so we can pass the values through the sugarwidgets to get the correct display html.
 
@@ -422,18 +430,17 @@ function formatDisplayValue($bean, $value, $vardef, $method = "save")
     }
 
     if ($method !== 'close' && ($vardef['type'] === 'datetimecombo' || $vardef['type'] === 'datetime' || $vardef['type'] === 'date')) {
-        if ($method !== 'save') {
+        if ($method != 'save') {
             $value = convertDateUserToDB($value);
         }
-        $datetime_format = $timedate->get_date_time_format();
-
-        if ($vardef['type'] === 'date') {
-            $value = date('Y-m-d', strtotime($value));
-            $value .= ' 00:00:00';
-            $datetime = DateTime::createFromFormat('Y-m-d H:i:s', $value, new DateTimeZone('UTC'));
-        } else {
-            $datetime = DateTime::createFromFormat($datetime_format, $value, new DateTimeZone('UTC'));
+        if ($vardef['type'] == 'datetime' || $vardef['type'] == 'datetimecombo') {
+            $datetime_format = $timedate->get_date_time_format($current_user);
+        } elseif ($vardef['type'] == 'date') {
+            $datetime_format = $timedate->get_date_format($current_user);
         }
+        // create utc date (as it's utc in db)
+        // use the calculated datetime_format
+        $datetime = DateTime::createFromFormat($datetime_format, $value, new DateTimeZone('UTC'));
 
         $value = $datetime->format($datetime_format);
     }
@@ -519,11 +526,6 @@ function formatDisplayValue($bean, $value, $vardef, $method = "save")
             $value = format_number($value);
         }
     }
-    if ($method === 'save' && $vardef['type'] === 'date') {
-        $value = explode(' ', $value);
-        $value = $value[0];
-    }
-
     return $value;
 }
 

@@ -4,7 +4,7 @@
  * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
  *
  * SuiteCRM is an extension to SugarCRM Community Edition developed by SalesAgility Ltd.
- * Copyright (C) 2011 - 2018 SalesAgility Ltd.
+ * Copyright (C) 2011 - 2021 SalesAgility Ltd.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,29 +37,24 @@
  * display the words "Powered by SugarCRM" and "Supercharged by SuiteCRM".
  */
 
-
-namespace SuiteCRM\Test;
+namespace SuiteCRM\Tests\Unit\lib\SuiteCRM\Search;
 
 use SuiteCRM\Search\Index\Documentify\AbstractDocumentifier;
-use SuiteCRM\Search\SearchTestAbstract;
-use SuiteCRM\StateSaver;
 
 require_once __DIR__ . "/AbstractDocumentifierMock.php";
 require_once __DIR__ . "/SearchTestAbstract.php";
 
-
+/**
+ * Class AbstractDocumentifierTest
+ * @package SuiteCRM\Tests\Unit\lib\SuiteCRM\Search
+ */
 class AbstractDocumentifierTest extends SearchTestAbstract
 {
     /** @var AbstractDocumentifier */
     private $documentifier;
 
-    public function testSanitizePhone()
+    public function testSanitizePhone(): void
     {
-        $state = new StateSaver();
-        $state->pushTable('reminders');
-        $state->pushTable('reminders_invitees');
-
-
         $data1 = "(+44) 012321323";
         $expe1 = "+44012321323";
 
@@ -72,18 +67,10 @@ class AbstractDocumentifierTest extends SearchTestAbstract
         self::assertEquals($expe1, $this->documentifier->sanitizePhone($data1));
         self::assertEquals($expe2, $this->documentifier->sanitizePhone($data2));
         self::assertEquals($expe3, $this->documentifier->sanitizePhone($data3));
-
-        $state->popTable('reminders');
-        $state->popTable('reminders_invitees');
     }
 
-    public function testFixPhone()
+    public function testFixPhone(): void
     {
-        $state = new StateSaver();
-        $state->pushTable('reminders');
-        $state->pushTable('reminders_invitees');
-
-
         $document = [
             'name' => 'foo',
             'phone' => [
@@ -100,19 +87,15 @@ class AbstractDocumentifierTest extends SearchTestAbstract
             ],
         ];
 
-
         $this->documentifier->fixPhone($document);
 
         self::assertEquals($expected, $document);
-
-        $state->popTable('reminders');
-        $state->popTable('reminders_invitees');
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->documentifier = new AbstractDocumentifierMock();
 
-        return parent::setUp();
+        parent::setUp();
     }
 }

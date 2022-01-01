@@ -82,20 +82,6 @@ class ViewSugarFieldCollection
         }
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function ViewSugarFieldCollection($fill_data = true)
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct($fill_data);
-    }
-
     /*
      * Retrieve the related module and load the bean and the relationship
      * call retrieve values()
@@ -104,7 +90,7 @@ class ViewSugarFieldCollection
     {
         if (!class_exists('Relationship')) {
         }
-        $rel = new Relationship();
+        $rel = BeanFactory::newBean('Relationships');
         if (!empty($this->vardef['relationship'])) {
             $rel->retrieve_by_name($this->vardef['relationship']);
         }

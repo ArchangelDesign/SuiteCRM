@@ -106,14 +106,14 @@ function sugar_mkdir($pathname, $mode = null, $recursive = false, $context = nul
 /**
  * sugar_fopen
  * Call this function instead of fopen to apply pre-configured permission
- * settings when creating the the file.  This method is basically
+ * settings when creating the file.  This method is basically
  * a wrapper to the PHP fopen function except that it supports setting
  * the mode value by using the configuration file (if set).  The mode is
  * 0777 by default.
  *
  * @param string $filename - String value of the file to create
  * @param int $mode - The integer value of the permissions mode to set the created file to
- * @param bool $use_include_path - boolean value indicating whether or not to search the the included_path
+ * @param bool $use_include_path - boolean value indicating whether or not to search the included_path
  * @param resource $context
  *
  * @return resource - Returns a file pointer on success, false otherwise
@@ -133,9 +133,31 @@ function sugar_fopen($filename, $mode, $use_include_path = false, $context = nul
 }
 
 /**
+ * sugar_fclose
+ * Call this function instead of fclose to make sure the closed file
+ * is removed from caches
+ *
+ * @param resource $handle - Handle of the file to close
+ *
+ * @return bool - Returns true on success, false otherwise
+ */
+function sugar_fclose($handle)
+{
+    $filename = stream_get_meta_data($handle)['uri'];
+
+    $result = fclose($handle);
+
+    if ((new SplFileInfo($filename))->getExtension() == 'php') {
+        SugarCache::cleanFile($filename);
+    }
+
+    return $result;
+}
+
+/**
  * sugar_file_put_contents
  * Call this function instead of file_put_contents to apply pre-configured permission
- * settings when creating the the file.  This method is basically
+ * settings when creating the file.  This method is basically
  * a wrapper to the PHP file_put_contents function except that it supports setting
  * the mode value by using the configuration file (if set).  The mode is
  * 0777 by default.
@@ -161,7 +183,9 @@ function sugar_file_put_contents($filename, $data, $flags = null, $context = nul
     }
 
     $result = file_put_contents($filename, $data, $flags, $context);
-    SugarCache::cleanFile($filename);
+    if ((new SplFileInfo($filename))->getExtension() == 'php') {
+        SugarCache::cleanFile($filename);
+    }
 
     return $result;
 }
@@ -207,7 +231,11 @@ function sugar_file_put_contents_atomic($filename, $data, $mode = 'wb')
     }
 
     if (file_exists($filename)) {
-        return sugar_chmod($filename, 0755);
+        $result = sugar_chmod($filename, 0755);
+        if ((new SplFileInfo($filename))->getExtension() == 'php') {
+            SugarCache::cleanFile($filename);
+        }
+        return $result;
     }
 
     return false;
@@ -217,7 +245,7 @@ function sugar_file_put_contents_atomic($filename, $data, $mode = 'wb')
  * sugar_file_get_contents.
  *
  * @param string $filename - String value of the file to create
- * @param bool $use_include_path - boolean value indicating whether or not to search the the included_path
+ * @param bool $use_include_path - boolean value indicating whether or not to search the included_path
  * @param resource $context
  *
  * @return string|bool - Returns a file data on success, false otherwise

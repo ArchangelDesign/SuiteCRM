@@ -25,14 +25,6 @@ if (!defined('sugarEntry') || !sugarEntry) {
 
 class AM_ProjectTemplatesViewGanttChart extends ViewDetail
 {
-
-    //Constructor
-    public function __construct()
-    {
-        parent::SugarView();
-    }
-
-
     public function display()
     {
         global $mod_strings, $app_list_strings;
@@ -47,7 +39,7 @@ class AM_ProjectTemplatesViewGanttChart extends ViewDetail
         echo '<script type="text/javascript" src="include/javascript/qtip/jquery.qtip.min.js"></script>';
 
 
-        $project_template = new AM_ProjectTemplates();
+        $project_template = BeanFactory::newBean('AM_ProjectTemplates');
 
         if (!isset($_REQUEST["record"]) || trim($_REQUEST["record"]) == "") {
             $_REQUEST["record"] = $_REQUEST["project_id"];

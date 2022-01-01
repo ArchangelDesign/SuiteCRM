@@ -74,25 +74,9 @@ require_once 'include/HTTP_WebDAV_Server/Server.php';
 
         public function __construct()
         {
-            $this->vcal_focus = new vCal();
-            $this->user_focus = new User();
+            $this->vcal_focus = BeanFactory::newBean('vCals');
+            $this->user_focus = BeanFactory::newBean('Users');
         }
-
-        /**
-         * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-         */
-        public function HTTP_WebDAV_Server_vCal()
-        {
-            $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-            if (isset($GLOBALS['log'])) {
-                $GLOBALS['log']->deprecated($deprecatedMessage);
-            } else {
-                trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-            }
-            self::__construct();
-        }
-
-
 
         /**
          * Serve a webdav request
@@ -143,10 +127,6 @@ require_once 'include/HTTP_WebDAV_Server/Server.php';
                 }
             } else {
                 $this->path = $this->_urldecode($_SERVER["PATH_INFO"]);
-
-                if (ini_get("magic_quotes_gpc")) {
-                    $this->path = stripslashes($this->path);
-                }
 
                 $query_str = preg_replace('/^\//', '', $this->path);
                 $query_arr =  array();

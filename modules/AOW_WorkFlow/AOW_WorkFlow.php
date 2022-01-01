@@ -138,11 +138,11 @@ class AOW_WorkFlow extends Basic
         $return_id = parent::save($check_notify);
 
         require_once('modules/AOW_Conditions/AOW_Condition.php');
-        $condition = new AOW_Condition();
+        $condition = BeanFactory::newBean('AOW_Conditions');
         $condition->save_lines($_POST, $this, 'aow_conditions_');
 
         require_once('modules/AOW_Actions/AOW_Action.php');
-        $action = new AOW_Action();
+        $action = BeanFactory::newBean('AOW_Actions');
         $action->save_lines($_POST, $this, 'aow_actions_');
 
         return $return_id;
@@ -217,13 +217,14 @@ class AOW_WorkFlow extends Basic
      */
     public function run_bean_flows(SugarBean $bean)
     {
-        if (!defined('SUGARCRM_IS_INSTALLING') && (!isset($_REQUEST['module']) || $_REQUEST['module'] != 'Import')) {
-            $query = "SELECT id FROM aow_workflow WHERE aow_workflow.flow_module = '" . $bean->module_dir . "' AND aow_workflow.status = 'Active' AND (aow_workflow.run_when = 'Always' OR aow_workflow.run_when = 'On_Save' OR aow_workflow.run_when = 'Create') AND aow_workflow.deleted = 0 ";
+        $query = "SELECT id FROM aow_workflow WHERE aow_workflow.flow_module = '" . $bean->module_dir . "' AND aow_workflow.status = 'Active' AND (aow_workflow.run_when = 'Always' OR aow_workflow.run_when = 'On_Save' OR aow_workflow.run_when = 'Create') AND aow_workflow.deleted = 0 ";
 
-            $result = $this->db->query($query, false);
-            $flow = new AOW_WorkFlow();
-            while (($row = $bean->db->fetchByAssoc($result)) != null) {
-                $flow->retrieve($row['id']);
+        $result = $this->db->query($query, false);
+        $flow = BeanFactory::newBean('AOW_WorkFlow');
+        while (($row = $bean->db->fetchByAssoc($result)) != null) {
+            $flow->retrieve($row['id']);
+
+            if ((!defined('SUGARCRM_IS_INSTALLING') && (!isset($_REQUEST['module'])) || $_REQUEST['module'] != 'Import') || $flow->run_on_import) {
                 if ($flow->check_valid_bean($bean)) {
                     $flow->run_actions($bean, true);
                 }
@@ -330,7 +331,7 @@ class AOW_WorkFlow extends Basic
             $result = $this->db->query($sql);
 
             while ($row = $this->db->fetchByAssoc($result)) {
-                $condition = new AOW_Condition();
+                $condition = BeanFactory::newBean('AOW_Conditions');
                 $condition->retrieve($row['id']);
                 $query = $this->build_query_where($condition, $module, $query);
                 if (empty($query)) {
@@ -505,7 +506,7 @@ class AOW_WorkFlow extends Basic
                                 if (file_exists('modules/AOBH_BusinessHours/AOBH_BusinessHours.php') && $params[0] == 'now') {
                                     require_once('modules/AOBH_BusinessHours/AOBH_BusinessHours.php');
 
-                                    $businessHours = new AOBH_BusinessHours();
+                                    $businessHours = BeanFactory::newBean('AOBH_BusinessHours');
 
                                     $amount = $params[2];
 
@@ -539,7 +540,8 @@ class AOW_WorkFlow extends Basic
                                         LoggerManager::getLogger()->warn('Date operator is not set in app_list_string[' . $params1 . ']');
                                     }
 
-                                    $value = "DATE_ADD($value, INTERVAL ".$dateOp." $params2 ".$params3.")";
+                                    $field = 'DATE_FORMAT('.$field.", '%Y-%m-%d %H:%i')";
+                                    $value = "DATE_FORMAT(DATE_ADD($value, INTERVAL ".$dateOp." $params2 ".$params3."), '%Y-%m-%d %H:%i')";
                                 }
                                 break;
                         }
@@ -633,7 +635,7 @@ class AOW_WorkFlow extends Basic
             }
         }
 
-        if (!isset($bean->date_entered)) {
+        if (!isset($bean->date_entered) && $bean->fetched_row !== false) {
             $bean->date_entered = $bean->fetched_row['date_entered'];
         }
 
@@ -667,7 +669,7 @@ class AOW_WorkFlow extends Basic
         $query_array = array();
 
         while ($row = $this->db->fetchByAssoc($result)) {
-            $condition = new AOW_Condition();
+            $condition = BeanFactory::newBean('AOW_Conditions');
             $condition->retrieve($row['id']);
 
             $path = unserialize(base64_decode($condition->module_path));
@@ -760,7 +762,7 @@ class AOW_WorkFlow extends Basic
                                     if (file_exists('modules/AOBH_BusinessHours/AOBH_BusinessHours.php')) {
                                         require_once('modules/AOBH_BusinessHours/AOBH_BusinessHours.php');
 
-                                        $businessHours = new AOBH_BusinessHours();
+                                        $businessHours = BeanFactory::newBean('AOBH_BusinessHours');
 
                                         $amount = $params[2];
                                         if ($params[1] != "plus") {
@@ -912,7 +914,7 @@ class AOW_WorkFlow extends Basic
     public function run_actions(SugarBean &$bean, $in_save = false)
     {
         require_once('modules/AOW_Processed/AOW_Processed.php');
-        $processed = new AOW_Processed();
+        $processed = BeanFactory::newBean('AOW_Processed');
         if (!$this->multiple_runs) {
             $processed->retrieve_by_string_fields(array('aow_workflow_id' => $this->id,'parent_id' => $bean->id));
 
@@ -934,7 +936,7 @@ class AOW_WorkFlow extends Basic
         $result = $this->db->query($sql);
 
         while ($row = $this->db->fetchByAssoc($result)) {
-            $action = new AOW_Action();
+            $action = BeanFactory::newBean('AOW_Actions');
             $action->retrieve($row['id']);
 
             if ($this->multiple_runs || !$processed->db->getOne("select id from aow_processed_aow_actions where aow_processed_id = '".$processed->id."' AND aow_action_id = '".$action->id."' AND status = 'Complete'")) {

@@ -1,213 +1,141 @@
 <?php
 
-class UserPreferenceTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
+
+class UserPreferenceTest extends SuitePHPUnitFrameworkTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         global $current_user;
         get_sugar_config_defaults();
-        $current_user = new User();
+        $current_user = BeanFactory::newBean('Users');
     }
-    
 
-    public function testgetUserDateTimePreferences()
+    public function testgetUserDateTimePreferences(): void
     {
-        // save state
+        $user = BeanFactory::newBean('Users');
+        $user->retrieve('1');
 
-        $state = new \SuiteCRM\StateSaver();
-        $state->pushTable('aod_index');
-        $state->pushGlobals();
+        $result = (new UserPreference($user))->getUserDateTimePreferences();
+        self::assertIsArray($result);
+    }
 
-        // test
-        
-        $user = new User();
+    public function testSetAndGetPreference(): void
+    {
+        self::markTestIncomplete('state is incorrect');
+
+        global $sugar_config;
+
+        $user = BeanFactory::newBean('Users');
         $user->retrieve('1');
 
         $userPreference = new UserPreference($user);
 
-        $result = $userPreference->getUserDateTimePreferences();
-        $this->assertTrue(is_array($result));
+        //test setPreference method
+        $userPreference->setPreference('test', 'test val', 'test_category');
 
-        // clean up
-        
-        $state->popTable('aod_index');
-        $state->popGlobals();
+        if (!isset($_SESSION[$user->user_name.'_PREFERENCES']['test_category']['test'])) {
+            LoggerManager::getLogger()->warn('no session');
+            $result = null;
+            self::markTestIncomplete('environment dependency: This test needs session');
+        } else {
+            $result = $_SESSION[$user->user_name.'_PREFERENCES']['test_category']['test'];
+        }
+
+        self::assertEquals('test val', $result);
+
+        //test getPreference method
+        $result = $userPreference->getPreference('test', 'test_category');
+        self::assertEquals('test val', $result);
+
+        $result = $userPreference->getPreference('chartEngine');
+        self::assertEquals($sugar_config['chartEngine'], $result);
     }
 
-    public function testSetAndGetPreference()
+    public function testgetDefaultPreference(): void
     {
-//        $this->markTestIncomplete('state is incorrect');
-//        // save state
-//
-//        $state = new \SuiteCRM\StateSaver();
-//        $state->pushTable('aod_index');
-//        $state->pushGlobals();
-//
-//        // test
-//
-//        global $sugar_config;
-//
-//        $user = new User();
-//        $user->retrieve('1');
-//
-//        $userPreference = new UserPreference($user);
-//
-//        //test setPreference method
-//        $userPreference->setPreference('test', 'test val', 'test_category');
-//
-//        if (!isset($_SESSION[$user->user_name.'_PREFERENCES']['test_category']['test'])) {
-//            LoggerManager::getLogger()->warn('no session');
-//            $result = null;
-//            self::markTestIncomplete('environment dependency: This test needs session');
-//        } else {
-//            $result = $_SESSION[$user->user_name.'_PREFERENCES']['test_category']['test'];
-//        }
-//
-//        $this->assertEquals('test val', $result);
-//
-//        //test getPreference method
-//        $result = $userPreference->getPreference('test', 'test_category');
-//        $this->assertEquals('test val', $result);
-//
-//        $result = $userPreference->getPreference('chartEngine');
-//        $this->assertEquals($sugar_config['chartEngine'], $result);
-//
-//        // clean up
-//
-//        $state->popTable('aod_index');
-//        $state->popGlobals();
-    }
-    
-    public function testgetDefaultPreference()
-    {
-        // save state
-
-        $state = new \SuiteCRM\StateSaver();
-        $state->pushTable('aod_index');
-
-        // test
-        
         global $sugar_config;
-
-        
-
-        $userPreference = new UserPreference();
+        $userPreference = BeanFactory::newBean('UserPreferences');
 
         //test with non global category
         $result = $userPreference->getDefaultPreference('chartEngine', 'Home');
-        $this->assertEquals(null, $result);
+        self::assertEquals(null, $result);
 
         //test with default global category
 
         $result = $userPreference->getDefaultPreference('chartEngine');
-        $this->assertEquals($sugar_config['chartEngine'], $result);
+        self::assertEquals($sugar_config['chartEngine'], $result);
 
         $date_format = $sugar_config['datef'] != '' ? $sugar_config['datef'] : $sugar_config['default_date_format'];
         $result = $userPreference->getDefaultPreference('datef');
-        $this->assertEquals($date_format, $result);
+        self::assertEquals($date_format, $result);
 
         $time_format = $sugar_config['timef'] != '' ? $sugar_config['timef'] : $sugar_config['default_time_format'];
         $result = $userPreference->getDefaultPreference('timef');
-        $this->assertEquals($time_format, $result);
+        self::assertEquals($time_format, $result);
 
         $email_link_type = (isset($sugar_config['email_link_type']) ? $sugar_config['email_link_type'] : null) != '' ? (isset($sugar_config['email_link_type']) ? $sugar_config['email_link_type'] : null) : $sugar_config['email_default_client'];
         $result = $userPreference->getDefaultPreference('email_link_type');
-        $this->assertEquals($email_link_type, $result);
-        
-        // clean up
-        
-        $state->popTable('aod_index');
+        self::assertEquals($email_link_type, $result);
     }
 
-    public function test__construct()
+    public function test__construct(): void
     {
-        // save state
+        // execute the constructor and check for the Object type and  attributes
+        $userPreference = BeanFactory::newBean('UserPreferences');
 
-        $state = new \SuiteCRM\StateSaver();
-        $state->pushTable('aod_index');
+        self::assertInstanceOf('UserPreference', $userPreference);
+        self::assertInstanceOf('SugarBean', $userPreference);
 
-        // test
-        
-        //execute the contructor and check for the Object type and  attributes
-        $userPreference = new UserPreference();
+        self::assertEquals('user_preferences', $userPreference->table_name);
+        self::assertEquals('UserPreferences', $userPreference->module_dir);
+        self::assertEquals('UserPreference', $userPreference->object_name);
 
-        $this->assertInstanceOf('UserPreference', $userPreference);
-        $this->assertInstanceOf('SugarBean', $userPreference);
-
-        $this->assertAttributeEquals('user_preferences', 'table_name', $userPreference);
-        $this->assertAttributeEquals('UserPreferences', 'module_dir', $userPreference);
-        $this->assertAttributeEquals('UserPreference', 'object_name', $userPreference);
-
-        $this->assertAttributeEquals(true, 'new_schema', $userPreference);
-        $this->assertAttributeEquals(true, 'disable_row_level_security', $userPreference);
-        
-        // clean up
-        
-        $state->popTable('aod_index');
-    }
-    
-    public function testSavePreferencesToDBAndResetPreferences()
-    {
-//        self::markTestIncomplete('environment dependency');
-//        // save state
-//
-//        $state = new \SuiteCRM\StateSaver();
-//        $state->pushTable('email_addresses');
-//        $state->pushTable('user_preferences');
-//        $state->pushTable('aod_index');
-//        $state->pushTable('tracker');
-//        $state->pushGlobals();
-//
-//        // test
-//
-//        $user = new User();
-//        $user->retrieve('1');
-//
-//        $userPreference = new UserPreference($user);
-//
-//        //create a Preference record, save it to DB
-//        $userPreference->setPreference('test', 'test val', 'test_category');
-//        $userPreference->savePreferencesToDB();
-//
-//        //retrieve it back and verify
-//        $result = $userPreference->retrieve_by_string_fields(array(
-//                'assigned_user_id' => $user->id,
-//                'category' => 'test_category',
-//        ));
-//
-//        //$this->assertFalse(isset($result->id));
-//
-//        //reset the preferences and verify that it is deleted
-//        $userPreference->resetPreferences();
-//        $result = $userPreference->retrieve_by_string_fields(array(
-//                'assigned_user_id' => $user->id,
-//                'category' => 'test_category',
-//        ));
-//        $this->assertEquals(null, $result);
-//
-//        // clean up
-//
-//        $state->popGlobals();
-//        $state->popTable('tracker');
-//        $state->popTable('aod_index');
-//        $state->popTable('user_preferences');
-//        $state->popTable('email_addresses');
+        self::assertEquals(true, $userPreference->new_schema);
+        self::assertEquals(true, $userPreference->disable_row_level_security);
     }
 
-
-
-
-    public function testupdateAllUserPrefs()
+    public function testSavePreferencesToDBAndResetPreferences(): void
     {
-//        global $current_user;
-//
-//        $current_user = new User();
-//        $current_user->retrieve('1');
-//
-//        //UserPreference::updateAllUserPrefs("test","test val");
-//
-//        $this->markTestIncomplete('Multiple errors in method: Unknown column user_preferences in field list');
+        self::markTestIncomplete('environment dependency');
+
+        $user = BeanFactory::newBean('Users');
+        $user->retrieve('1');
+
+        $userPreference = new UserPreference($user);
+
+        //create a Preference record, save it to DB
+        $userPreference->setPreference('test', 'test val', 'test_category');
+        $userPreference->savePreferencesToDB();
+
+        //retrieve it back and verify
+        $result = $userPreference->retrieve_by_string_fields(array(
+                'assigned_user_id' => $user->id,
+                'category' => 'test_category',
+        ));
+
+        //$this->assertFalse(isset($result->id));
+
+        //reset the preferences and verify that it is deleted
+        $userPreference->resetPreferences();
+        $result = $userPreference->retrieve_by_string_fields(array(
+                'assigned_user_id' => $user->id,
+                'category' => 'test_category',
+        ));
+        self::assertEquals(null, $result);
+    }
+
+    public function testupdateAllUserPrefs(): void
+    {
+        global $current_user;
+
+        $current_user = BeanFactory::newBean('Users');
+        $current_user->retrieve('1');
+
+        //UserPreference::updateAllUserPrefs("test","test val");
+
+        self::markTestIncomplete('Multiple errors in method: Unknown column user_preferences in field list');
     }
 }

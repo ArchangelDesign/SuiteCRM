@@ -49,21 +49,6 @@ class jjwg_Areas extends jjwg_Areas_sugar
     }
 
     /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function jjwg_Areas($init=true)
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct($init);
-    }
-
-
-    /**
      * Load Configuration Settings using Administration Module
      * See jjwg_Maps module for setting config
      * $GLOBALS['jjwg_config_defaults']
@@ -71,7 +56,7 @@ class jjwg_Areas extends jjwg_Areas_sugar
      */
     public function configuration()
     {
-        $this->jjwg_Maps = new jjwg_Maps();
+        $this->jjwg_Maps = BeanFactory::newBean('jjwg_Maps');
         $this->settings = $GLOBALS['jjwg_config'];
     }
 
@@ -138,8 +123,13 @@ class jjwg_Areas extends jjwg_Areas_sugar
     {
         $loc = array();
         $loc['name'] = $this->name;
-        $loc['lng'] = $this->centroid['lng'];
-        $loc['lat'] = $this->centroid['lat'];
+        if (!is_null($this->centroid)) {
+            $loc['lng'] = $this->centroid['lng'];
+            $loc['lat'] = $this->centroid['lat'];
+        } else {
+            $loc['lng'] = null;
+            $loc['lat'] = null;
+        }
         $loc = $this->define_loc($loc);
 
         return $loc;
@@ -238,8 +228,13 @@ class jjwg_Areas extends jjwg_Areas_sugar
             $loc['lng'] = $marker['lng'];
         } else {
             $loc['name'] = '';
-            $loc['lat'] = $this->centroid['lat'];
-            $loc['lng'] = $this->centroid['lng'];
+            if (is_null($this->centroid)) {
+                $loc['lat'] = null;
+                $loc['lng'] = null;
+            } else {
+                $loc['lat'] = $this->centroid['lat'];
+                $loc['lng'] = $this->centroid['lng'];
+            }
         }
 
         if (empty($loc['name'])) {

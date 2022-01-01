@@ -1,8 +1,9 @@
 <?php
 
 use \SuiteCRM\Robo\Plugin\Commands\CodeCoverageCommands;
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
 
-class CodeCoverageCommandsTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+class CodeCoverageCommandsTest extends SuitePHPUnitFrameworkTestCase
 {
     /**
      * @var \UnitTester
@@ -12,7 +13,7 @@ class CodeCoverageCommandsTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstr
     /** @var \SuiteCRM\Robo\Plugin\Commands\CodeCoverageCommands **/
     protected static $testClass;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -21,10 +22,9 @@ class CodeCoverageCommandsTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstr
         }
     }
 
-    public function testIsEnvironmentTravisCI()
+    public function testIsEnvironmentTravisCI(): void
     {
-        $reflection = new ReflectionClass(CodeCoverageCommands::class);
-        $method = $reflection->getMethod('isEnvironmentTravisCI');
+        $method = (new ReflectionClass(CodeCoverageCommands::class))->getMethod('isEnvironmentTravisCI');
         $method->setAccessible(true);
 
         $actual = $method->invoke(
@@ -32,13 +32,12 @@ class CodeCoverageCommandsTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstr
         );
 
         $returnType = is_string($actual) || is_array($actual) || is_bool($actual);
-        $this->assertTrue($returnType);
+        self::assertTrue($returnType);
     }
 
-    public function testGetCommitRangeForTravisCi()
+    public function testGetCommitRangeForTravisCi(): void
     {
-        $reflection = new ReflectionClass(CodeCoverageCommands::class);
-        $method = $reflection->getMethod('getCommitRangeForTravisCi');
+        $method = (new ReflectionClass(CodeCoverageCommands::class))->getMethod('getCommitRangeForTravisCi');
         $method->setAccessible(true);
 
         $actual = $method->invoke(
@@ -46,47 +45,20 @@ class CodeCoverageCommandsTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstr
         );
 
         $returnType = is_string($actual) || is_array($actual) || is_bool($actual);
-        $this->assertTrue($returnType);
+        self::assertTrue($returnType);
     }
 
-    public function testDisableStateChecker()
-    {
-        // backup configure override
-        $configOverrideData = '';
-        $configOverridePath = 'config_override.php';
-        if (file_exists($configOverridePath)) {
-            $configOverrideData = \file_get_contents($configOverridePath);
-        }
-
-        // Run tests
-        $reflection = new ReflectionClass(CodeCoverageCommands::class);
-        $method = $reflection->getMethod('disableStateChecker');
-        $method->setAccessible(true);
-
-        $actual = $method->invoke(
-            self::$testClass
-        );
-
-        $this->assertTrue($actual);
-
-        // restore config override
-        if (!empty($configOverrideData)) {
-            \file_put_contents($configOverridePath, $configOverrideData);
-        }
-    }
-
-    public function testGetCodeCoverageCommand()
+    public function testGetCodeCoverageCommand(): void
     {
         $commandExpected = './vendor/bin/phpunit --configuration ./tests/phpunit.xml.dist --coverage-clover ./tests/_output/coverage.xml ./tests/unit/phpunit';
         // Run tests
-        $reflection = new ReflectionClass(CodeCoverageCommands::class);
-        $method = $reflection->getMethod('getCodeCoverageCommand');
+        $method = (new ReflectionClass(CodeCoverageCommands::class))->getMethod('getCodeCoverageCommand');
         $method->setAccessible(true);
 
         $actual = $method->invoke(
             self::$testClass
         );
 
-        $this->assertEquals($commandExpected, $actual);
+        self::assertEquals($commandExpected, $actual);
     }
 }

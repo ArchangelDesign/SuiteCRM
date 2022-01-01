@@ -1,20 +1,21 @@
 <?php
 
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
 
-class AccountTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+class AccountTest extends SuitePHPUnitFrameworkTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         global $current_user;
         get_sugar_config_defaults();
-        $current_user = new User();
+        $current_user = BeanFactory::newBean('Users');
     }
 
-    public function testgetProductsServicesPurchasedQuery()
+    public function testgetProductsServicesPurchasedQuery(): void
     {
-        $Account = new Account();
+        $Account = BeanFactory::newBean('Accounts');
 
         //without account id
         $expected = "
@@ -27,7 +28,7 @@ class AccountTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
 
 			";
         $actual = $Account->getProductsServicesPurchasedQuery();
-        $this->assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
 
         //with account id
         $expected = "
@@ -41,93 +42,82 @@ class AccountTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
 			";
         $Account->id = '1234';
         $actual = $Account->getProductsServicesPurchasedQuery();
-        $this->assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
     }
 
-    public function testAccount()
+    public function testAccount(): void
     {
-        //execute the contructor and check for the Object type and type attribute
-        $Account = new Account();
-        $this->assertInstanceOf('Account', $Account);
-        $this->assertInstanceOf('Company', $Account);
-        $this->assertInstanceOf('SugarBean', $Account);
-        $this->assertTrue(is_array($Account->field_name_map));
-        $this->assertTrue(is_array($Account->field_defs));
+        // Execute the constructor and check for the Object type and type attribute
+        $Account = BeanFactory::newBean('Accounts');
+        self::assertInstanceOf('Account', $Account);
+        self::assertInstanceOf('Company', $Account);
+        self::assertInstanceOf('SugarBean', $Account);
+        self::assertIsArray($Account->field_name_map);
+        self::assertIsArray($Account->field_defs);
     }
 
-    public function testget_summary_text()
+    public function testget_summary_text(): void
     {
         //test without name setting attribute
-        $Account = new Account();
+        $Account = BeanFactory::newBean('Accounts');
         $name = $Account->get_summary_text();
-        $this->assertEquals(null, $name);
+        self::assertEquals(null, $name);
 
         //test with  name attribute set
         $Account->name = 'test account';
         $name = $Account->get_summary_text();
-        $this->assertEquals('test account', $name);
+        self::assertEquals('test account', $name);
     }
 
-    public function testget_contacts()
+    public function testget_contacts(): void
     {
-        $Account = new Account('');
-
         //execute the method and verify that it returns an array
-        $contacts = $Account->get_contacts();
-        $this->assertTrue(is_array($contacts));
+        $contacts = (new Account(''))->get_contacts();
+        self::assertIsArray($contacts);
     }
 
-    public function testclear_account_case_relationship()
+    public function testremove_redundant_http(): void
     {
-        $this->markTestIncomplete('Can Not be implemented - Query has a wrong column name which makes the function to die');
-        //This method cannot be tested because Query has a wrong column name which makes the function to die.
-
-        /*$Account = new Account();
-        $Account->clear_account_case_relationship('','');*/
-    }
-
-    public function testremove_redundant_http()
-    {
-        $Account = new Account();
+        $Account = BeanFactory::newBean('Accounts');
 
         //this method has no implementation. so test for exceptions only.
         try {
             $Account->remove_redundant_http();
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
     }
 
-    public function testfill_in_additional_list_fields()
+    public function testfill_in_additional_list_fields(): void
     {
         $Account = new Account('');
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $Account->fill_in_additional_list_fields();
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
     }
 
-    public function testfill_in_additional_detail_fields()
+    public function testfill_in_additional_detail_fields(): void
     {
         $Account = new Account('');
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $Account->fill_in_additional_detail_fields();
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
     }
 
-    public function testget_list_view_data()
+    public function testget_list_view_data(): void
     {
-        $this->markTestIncomplete('Breaks on php 7.1');
+        self::markTestIncomplete('Breaks on php 7.1');
         $this->
         $expected = array(
             'DELETED' => 0,
@@ -145,72 +135,49 @@ class AccountTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
             'SHIPPING_ADDRESS_STREET' => null,
         );
 
-        $Account = new Account();
-
         //execute the method and verify that it retunrs expected results
-        $actual = $Account->get_list_view_data();
+        $actual = BeanFactory::newBean('Accounts')->get_list_view_data();
 
         foreach ($expected as $key => $value) {
-            $this->assertSame($expected[$key], $actual[$key]);
+            self::assertSame($expected[$key], $actual[$key]);
         }
     }
 
-    public function testbuild_generic_where_clause()
+    public function testbuild_generic_where_clause(): void
     {
-        $Account = new Account();
+        $Account = BeanFactory::newBean('Accounts');
 
         //execute the method with a string as parameter and verify that it retunrs expected results
         $expected = "accounts.name like 'value%'";
         $actual = $Account->build_generic_where_clause('value');
-        $this->assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
 
         //execute the method with number as parameter and verify that it retunrs expected results
         $expected = "accounts.name like '1234%' or accounts.phone_alternate like '%1234%' or accounts.phone_fax like '%1234%' or accounts.phone_office like '%1234%'";
         $actual = $Account->build_generic_where_clause('1234');
-        $this->assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
     }
 
-    public function testcreate_export_query()
+    public function testset_notification_body(): void
     {
-        $this->markTestIncomplete('Needs to clearify');
-        
-//        $Account = new Account();
-//
-//        // execute the method with empty strings and verify that it retunrs expected results
-//        $expected = "SELECT
-//                                accounts.*,
-//                                email_addresses.email_address email_address,
-//                                '' email_addresses_non_primary, accounts.name as account_name,
-//                                users.user_name as assigned_user_name ,accounts_cstm.jjwg_maps_address_c,accounts_cstm.jjwg_maps_geocode_status_c,accounts_cstm.jjwg_maps_lat_c,accounts_cstm.jjwg_maps_lng_c FROM accounts LEFT JOIN users
-//	                                ON accounts.assigned_user_id=users.id  LEFT JOIN  email_addr_bean_rel on accounts.id = email_addr_bean_rel.bean_id and email_addr_bean_rel.bean_module='Accounts' and email_addr_bean_rel.deleted=0 and email_addr_bean_rel.primary_address=1  LEFT JOIN email_addresses on email_addresses.id = email_addr_bean_rel.email_address_id  LEFT JOIN accounts_cstm ON accounts.id = accounts_cstm.id_c where ( accounts.deleted IS NULL OR accounts.deleted=0 )";
-//
-//        $actual = $Account->create_export_query('', '');
-//
-//        $this->assertSame($expected, $actual);
-    }
-
-    public function testset_notification_body()
-    {
-        $Account = new Account();
-
         //execute the method and test if populates provided sugar_smarty
-        $result = $Account->set_notification_body(new Sugar_Smarty(), new Account());
-        $this->assertInstanceOf('Sugar_Smarty', $result);
-        $this->assertNotEquals(new Sugar_Smarty(), $result);
+        $result = BeanFactory::newBean('Accounts')->set_notification_body(new Sugar_Smarty(), BeanFactory::newBean('Accounts'));
+        self::assertInstanceOf('Sugar_Smarty', $result);
+        self::assertNotEquals(new Sugar_Smarty(), $result);
     }
 
-    public function testbean_implements()
+    public function testbean_implements(): void
     {
-        $Account = new Account();
+        $Account = BeanFactory::newBean('Accounts');
 
-        $this->assertTrue($Account->bean_implements('ACL')); //test with valid value
-        $this->assertFalse($Account->bean_implements('')); //test with empty value
-        $this->assertFalse($Account->bean_implements('Basic'));//test with invalid value
+        self::assertTrue($Account->bean_implements('ACL')); //test with valid value
+        self::assertFalse($Account->bean_implements('')); //test with empty value
+        self::assertFalse($Account->bean_implements('Basic'));//test with invalid value
     }
 
-    public function testget_unlinked_email_query()
+    public function testget_unlinked_email_query(): void
     {
-        $Account = new Account();
+        $Account = BeanFactory::newBean('Accounts');
 
         //without setting type parameter
         $expected = "SELECT emails.id FROM emails  JOIN (select DISTINCT email_id from emails_email_addr_rel eear
@@ -221,7 +188,7 @@ class AccountTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
 	(select eb.email_id from emails_beans eb where eb.bean_module ='Accounts' and eb.bean_id = '')
 	) derivedemails on derivedemails.email_id = emails.id";
         $actual = $Account->get_unlinked_email_query();
-        $this->assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
 
         //with type parameter set
         $expected = array(
@@ -239,6 +206,6 @@ class AccountTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         );
 
         $actual = $Account->get_unlinked_email_query(array('return_as_array' => 'true'));
-        $this->assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
     }
 }

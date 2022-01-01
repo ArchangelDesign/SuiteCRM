@@ -1,43 +1,37 @@
 <?php
 
-class AOS_ProductsTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
+
+class AOS_ProductsTest extends SuitePHPUnitFrameworkTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         global $current_user;
         get_sugar_config_defaults();
-        $current_user = new User();
+        $current_user = BeanFactory::newBean('Users');
     }
 
-    public function testAOS_Products()
+    public function testAOS_Products(): void
     {
-        //execute the contructor and check for the Object type and  attributes
-        $aosProducts = new AOS_Products();
-        $this->assertInstanceOf('AOS_Products', $aosProducts);
-        $this->assertInstanceOf('Basic', $aosProducts);
-        $this->assertInstanceOf('SugarBean', $aosProducts);
+        // Execute the constructor and check for the Object type and  attributes
+        $aosProducts = BeanFactory::newBean('AOS_Products');
+        self::assertInstanceOf('AOS_Products', $aosProducts);
+        self::assertInstanceOf('Basic', $aosProducts);
+        self::assertInstanceOf('SugarBean', $aosProducts);
 
-        $this->assertAttributeEquals('AOS_Products', 'module_dir', $aosProducts);
-        $this->assertAttributeEquals('AOS_Products', 'object_name', $aosProducts);
-        $this->assertAttributeEquals('aos_products', 'table_name', $aosProducts);
-        $this->assertAttributeEquals(true, 'new_schema', $aosProducts);
-        $this->assertAttributeEquals(true, 'disable_row_level_security', $aosProducts);
-        $this->assertAttributeEquals(true, 'importable', $aosProducts);
+        self::assertEquals('AOS_Products', $aosProducts->module_dir);
+        self::assertEquals('AOS_Products', $aosProducts->object_name);
+        self::assertEquals('aos_products', $aosProducts->table_name);
+        self::assertEquals(true, $aosProducts->new_schema);
+        self::assertEquals(true, $aosProducts->disable_row_level_security);
+        self::assertEquals(true, $aosProducts->importable);
     }
 
-    public function testsave()
+    public function testsave(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('aos_products');
-        $state->pushTable('aod_index');
-        $state->pushTable('tracker');
-        $state->pushGlobals();
-        
-        
-
-        $aosProducts = new AOS_Products();
+        $aosProducts = BeanFactory::newBean('AOS_Products');
 
         $aosProducts->name = 'test';
         $aosProducts->category = 1;
@@ -47,52 +41,45 @@ class AOS_ProductsTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         $aosProducts->save();
 
         //test for record ID to verify that record is saved
-        $this->assertTrue(isset($aosProducts->id));
-        $this->assertEquals(36, strlen($aosProducts->id));
-        $this->assertEquals('', $aosProducts->product_image);
+        self::assertTrue(isset($aosProducts->id));
+        self::assertEquals(36, strlen($aosProducts->id));
+        self::assertEquals('', $aosProducts->product_image);
 
         //mark the record as deleted and verify that this record cannot be retrieved anymore.
         $aosProducts->mark_deleted($aosProducts->id);
         $result = $aosProducts->retrieve($aosProducts->id);
-        $this->assertEquals(null, $result);
-        
-        // clean up
-        
-        $state->popGlobals();
-        $state->popTable('tracker');
-        $state->popTable('aod_index');
-        $state->popTable('aos_products');
+        self::assertEquals(null, $result);
     }
 
-    public function testgetCustomersPurchasedProductsQuery()
+    public function testgetCustomersPurchasedProductsQuery(): void
     {
-//        self::markTestIncomplete('environment dependency');
-//
-//        $aosProducts = new AOS_Products();
-//        $aosProducts->id = 1;
-//
-//        //execute the method and verify that it returns expected results
-//        $expected = "SELECT * FROM (
-// 				SELECT
-//					aos_quotes.*,
-//					accounts.id AS account_id,
-//					accounts.name AS billing_account,
-//
-//					opportunity_id AS opportunity,
-//					billing_contact_id AS billing_contact,
-//					'' AS created_by_name,
-//					'' AS modified_by_name,
-//					'' AS assigned_user_name
-//				FROM
-//					aos_products
-//
-//				JOIN aos_products_quotes ON aos_products_quotes.product_id = aos_products.id AND aos_products.id = '1' AND aos_products_quotes.deleted = 0 AND aos_products.deleted = 0
-//				JOIN aos_quotes ON aos_quotes.id = aos_products_quotes.parent_id AND aos_quotes.stage = 'Closed Accepted' AND aos_quotes.deleted = 0
-//				JOIN accounts ON accounts.id = aos_quotes.billing_account_id -- AND accounts.deleted = 0
-//
-//				GROUP BY accounts.id
-//			) AS aos_quotes";
-//        $actual = $aosProducts->getCustomersPurchasedProductsQuery();
-//        $this->assertSame(trim($expected), trim($actual));
+        self::markTestIncomplete('environment dependency');
+
+        $aosProducts = BeanFactory::newBean('AOS_Products');
+        $aosProducts->id = 1;
+
+        //execute the method and verify that it returns expected results
+        $expected = "SELECT * FROM (
+                SELECT
+                    aos_quotes.*,
+                    accounts.id AS account_id,
+                    accounts.name AS billing_account,
+
+                    opportunity_id AS opportunity,
+                    billing_contact_id AS billing_contact,
+                    '' AS created_by_name,
+                    '' AS modified_by_name,
+                    '' AS assigned_user_name
+                FROM
+                    aos_products
+
+                JOIN aos_products_quotes ON aos_products_quotes.product_id = aos_products.id AND aos_products.id = '1' AND aos_products_quotes.deleted = 0 AND aos_products.deleted = 0
+                JOIN aos_quotes ON aos_quotes.id = aos_products_quotes.parent_id AND aos_quotes.stage = 'Closed Accepted' AND aos_quotes.deleted = 0
+                JOIN accounts ON accounts.id = aos_quotes.billing_account_id -- AND accounts.deleted = 0
+
+                GROUP BY accounts.id
+            ) AS aos_quotes";
+        $actual = $aosProducts->getCustomersPurchasedProductsQuery();
+        self::assertSame(trim($expected), trim($actual));
     }
 }

@@ -42,7 +42,7 @@ if (!defined('sugarEntry') || !sugarEntry) {
     die('Not A Valid Entry Point');
 }
 
-require_once('include/utils/zip_utils.php');
+require_once('include/utils/php_zip_utils.php');
 require_once('include/upload_file.php');
 
 ////////////////
@@ -254,7 +254,7 @@ function commitPatch($unlink = false, $type = 'patch')
     $errors = array();
     $files = array();
     global $current_user;
-    $current_user = new User();
+    $current_user = BeanFactory::newBean('Users');
     $current_user->is_admin = '1';
     $old_mod_strings = $mod_strings;
     if (is_dir($base_upgrade_dir)) {
@@ -324,7 +324,7 @@ function commitModules($unlink = false, $type = 'module')
     $errors = array();
     $files = array();
     global $current_user;
-    $current_user = new User();
+    $current_user = BeanFactory::newBean('Users');
     $current_user->is_admin = '1';
     $old_mod_strings = $mod_strings;
     if (is_dir(sugar_cached("upload/upgrades"))) {
@@ -791,6 +791,9 @@ function handleSugarConfig()
         $sugar_config['dbconfigoption']                 = array_merge($sugar_config['dbconfigoption'], $_SESSION['setup_db_options']);
     }
 
+    $sugar_config['dbconfig']['collation']          = $_SESSION['setup_db_collation'];
+    $sugar_config['dbconfig']['charset']            = $_SESSION['setup_db_charset'];
+
     $sugar_config['cache_dir']                      = $cache_dir;
     $sugar_config['default_charset']                = $mod_strings['DEFAULT_CHARSET'];
     $sugar_config['default_email_client']           = 'sugar';
@@ -969,7 +972,10 @@ function handleHtaccess()
 {
     global $mod_strings;
     global $sugar_config;
-    $ignoreCase = (substr_count(strtolower($_SERVER['SERVER_SOFTWARE']), 'apache/2') > 0) ? '(?i)' : '';
+    $ignoreCase = '';
+    if (!empty($_SERVER['SERVER_SOFTWARE']) && (substr_count(strtolower($_SERVER['SERVER_SOFTWARE']), 'apache/2') > 0)) {
+        $ignoreCase = '(?i)';
+    }
     $htaccess_file = '.htaccess';
     $contents = '';
     $basePath = parse_url($sugar_config['site_url'], PHP_URL_PATH);
@@ -979,7 +985,6 @@ function handleHtaccess()
     $cacheDir = $sugar_config['cache_dir'];
 
     $restrict_str = <<<EOQ
-
 # BEGIN SUITECRM RESTRICTIONS
 
 EOQ;
@@ -1021,8 +1026,8 @@ EOQ;
     # -----------------------------
 
     RewriteRule ^Api/(.*)$ - [env=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-    RewriteRule ^Api/access_token$ Api/index.php/access_token [L]
-    RewriteRule ^Api/V8/(.*?)$ Api/index.php/V8/$1 [L]
+    RewriteRule ^Api/access_token$ Api/index.php [L]
+    RewriteRule ^Api/V8/(.*?)$ Api/index.php [L]
 </IfModule>
 <IfModule mod_headers.c>
     Header unset ETag
@@ -1104,31 +1109,41 @@ EOQ;
 </IfModule>
 # END SUITECRM RESTRICTIONS
 EOQ;
+
+    // add custom content from current '.htaccess' before "# BEGIN SUITECRM RESTRICTIONS"
+    $haveBegin = false;
     if (file_exists($htaccess_file)) {
         $fp = fopen($htaccess_file, 'rb');
-        $skip = false;
         while ($line = fgets($fp)) {
             if (preg_match("/\s*#\s*BEGIN\s*SUITECRM\s*RESTRICTIONS/i",
                     $line) || preg_match("/\s*#\s*BEGIN\s*SUGARCRM\s*RESTRICTIONS/i", $line)) {
-                if (!$skip) {
-                    $contents .= $line;
-                }
-                $skip = true;
-                if (preg_match("/\s*#\s*END\s*SUITECRM\s*RESTRICTIONS/i",
-                        $line) || preg_match("/\s*#\s*END\s*SUGARCRM\s*RESTRICTIONS/i", $line)) {
-                    $skip = false;
-                }
+                $haveBegin = true;
+                break;
+            }
+            $contents .= $line;
+        }
+        fclose($fp);
+    }
+    // add default content
+    $contents .= $restrict_str . $cache_headers;
+    // add custom content from current '.htaccess' after "# END SUITECRM RESTRICTIONS"
+    if ($haveBegin && file_exists($htaccess_file)) {
+        $skip = true;
+        $fp = fopen($htaccess_file, 'rb');
+        while ($line = fgets($fp)) {
+            if (preg_match("/\s*#\s*END\s*SUITECRM\s*RESTRICTIONS/i",
+                    $line) || preg_match("/\s*#\s*END\s*SUGARCRM\s*RESTRICTIONS/i", $line)) {
+                $skip = false;
+                $contents .= PHP_EOL;
+                continue;
             }
             if (!$skip) {
                 $contents .= $line;
             }
-            if (preg_match("/\s*#\s*END\s*SUITECRM\s*RESTRICTIONS/i",
-                    $line) || preg_match("/\s*#\s*END\s*SUGARCRM\s*RESTRICTIONS/i", $line)) {
-                $skip = false;
-            }
         }
+        fclose($fp);
     }
-    $status = file_put_contents($htaccess_file, $contents . $restrict_str . $cache_headers);
+    $status = file_put_contents($htaccess_file, $contents);
     if (!$status) {
         echo "<p>{$mod_strings['ERR_PERFORM_HTACCESS_1']}<span class=stop>{$htaccess_file}</span> {$mod_strings['ERR_PERFORM_HTACCESS_2']}</p>\n";
         echo "<p>{$mod_strings['ERR_PERFORM_HTACCESS_3']}</p>\n";
@@ -1273,19 +1288,17 @@ function create_table_if_not_exist(&$focus)
 }
 
 
-
 function create_default_users()
 {
-    $db = DBManagerFactory::getInstance();
     global $setup_site_admin_password;
     global $setup_site_admin_user_name;
     global $create_default_user;
     global $sugar_config;
 
     require_once('install/UserDemoData.php');
-
+    
     //Create default admin user
-    $user = new User();
+    $user = BeanFactory::newBean('Users');
     $user->id = 1;
     $user->new_with_id = true;
     $user->last_name = 'Administrator';
@@ -1295,14 +1308,12 @@ function create_default_users()
     $user->is_admin = true;
     $user->employee_status = 'Active';
     $user->user_hash = User::getPasswordHash($setup_site_admin_password);
-    $user->save();
-    //Bug#53793: Keep default current user in the global variable in order to store 'created_by' info as default user
-    //           while installation is proceed.
-    $GLOBALS['current_user'] = $user;
 
+    $GLOBALS['current_user'] = $user;
+    $GLOBALS['current_user']->save();
 
     if ($create_default_user) {
-        $default_user = new User();
+        $default_user = BeanFactory::newBean('Users');
         $default_user->last_name = $sugar_config['default_user_name'];
         $default_user->user_name = $sugar_config['default_user_name'];
         $default_user->status = 'Active';
@@ -1361,10 +1372,6 @@ function insert_default_settings()
 
     //insert default tracker settings
     $db->query("INSERT INTO config (category, name, value) VALUES ('tracker', 'Tracker', '1')");
-
-
-
-    $db->query("INSERT INTO config (category, name, value) VALUES ( 'system', 'skypeout_on', '1')");
 }
 
 
@@ -2182,7 +2189,7 @@ function post_install_modules()
 {
     if (is_file('modules_post_install.php')) {
         global $current_user, $mod_strings;
-        $current_user = new User();
+        $current_user = BeanFactory::newBean('Users');
         $current_user->is_admin = '1';
         require_once('ModuleInstall/PackageManager/PackageManager.php');
         require_once('modules_post_install.php');
@@ -2230,7 +2237,7 @@ function addDefaultRoles($defaultRoles = array())
 
     foreach ($defaultRoles as $roleName=>$role) {
         $ACLField = new ACLField();
-        $role1= new ACLRole();
+        $role1= BeanFactory::newBean('ACLRoles');
         $role1->name = $roleName;
         $role1->description = $roleName." Role";
         $role1_id=$role1->save();
@@ -2258,7 +2265,7 @@ function addDefaultRoles($defaultRoles = array())
  */
 function enableSugarFeeds()
 {
-    $admin = new Administration();
+    $admin = BeanFactory::newBean('Administration');
     $admin->saveSetting('sugarfeed', 'enabled', '1');
 
     foreach (SugarFeed::getAllFeedModules() as $module) {
@@ -2276,26 +2283,6 @@ function create_writable_dir($dirname)
     if (empty($ok)) {
         installLog("ERROR: Cannot create writable dir $dirname");
     }
-}
-
-/**
- * Create default OAuth2 encryption key
- * @throws Exception
- */
-function createEncryptionKey()
-{
-    $key = "OAUTH2_ENCRYPTION_KEY = '" . base64_encode(random_bytes(32));
-    $apiConfig = file_get_contents('Api/Core/Config/ApiConfig.php');
-    $configFileContents = str_replace(
-        "OAUTH2_ENCRYPTION_KEY = '",
-        $key,
-        $apiConfig
-    );
-    file_put_contents(
-        'Api/Core/Config/ApiConfig.php',
-        $configFileContents,
-        LOCK_EX
-    );
 }
 
 /**

@@ -1,61 +1,37 @@
 <?php
 
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
 
-class AOR_ReportTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+class AOR_ReportTest extends SuitePHPUnitFrameworkTestCase
 {
-    public function testAOR_Report()
+    public function testAOR_Report(): void
     {
-        //execute the contructor and check for the Object type and  attributes
-        $aor_Report = new AOR_Report();
-        $this->assertInstanceOf('AOR_Report', $aor_Report);
-        $this->assertInstanceOf('Basic', $aor_Report);
-        $this->assertInstanceOf('SugarBean', $aor_Report);
+        // Execute the constructor and check for the Object type and  attributes
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
+        self::assertInstanceOf('AOR_Report', $aor_Report);
+        self::assertInstanceOf('Basic', $aor_Report);
+        self::assertInstanceOf('SugarBean', $aor_Report);
 
-        $this->assertAttributeEquals('AOR_Reports', 'module_dir', $aor_Report);
-        $this->assertAttributeEquals('AOR_Report', 'object_name', $aor_Report);
-        $this->assertAttributeEquals('aor_reports', 'table_name', $aor_Report);
-        $this->assertAttributeEquals(true, 'new_schema', $aor_Report);
-        $this->assertAttributeEquals(true, 'disable_row_level_security', $aor_Report);
-        $this->assertAttributeEquals(true, 'importable', $aor_Report);
+        self::assertEquals('AOR_Reports', $aor_Report->module_dir);
+        self::assertEquals('AOR_Report', $aor_Report->object_name);
+        self::assertEquals('aor_reports', $aor_Report->table_name);
+        self::assertEquals(true, $aor_Report->new_schema);
+        self::assertEquals(true, $aor_Report->disable_row_level_security);
+        self::assertEquals(true, $aor_Report->importable);
     }
 
-    public function testbean_implements()
+    public function testbean_implements(): void
     {
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
 
-        $this->assertEquals(false, $aor_Report->bean_implements('')); //test with blank value
-        $this->assertEquals(false, $aor_Report->bean_implements('test')); //test with invalid value
-        $this->assertEquals(true, $aor_Report->bean_implements('ACL')); //test with valid value
+        self::assertEquals(false, $aor_Report->bean_implements('')); //test with blank value
+        self::assertEquals(false, $aor_Report->bean_implements('test')); //test with invalid value
+        self::assertEquals(true, $aor_Report->bean_implements('ACL')); //test with valid value
     }
 
-    public function testsave()
+    public function testsave(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('tracker');
-        $state->pushTable('aod_index');
-        $state->pushTable('aor_charts');
-        $state->pushTable('aor_fields');
-        $state->pushTable('aor_reports');
-        $state->pushFile('modules/AOD_Index/Index/Index/read.lock.file');
-        $state->pushFile('modules/AOD_Index/Index/Index/segments_3n');
-        $state->pushFile('modules/AOD_Index/Index/Index/read-lock-processing.lock.file');
-        $state->pushFile('modules/AOD_Index/Index/Index/write.lock.file');
-        $state->pushFile('modules/AOD_Index/Index/Index/optimization.lock.file');
-        $state->pushFile('modules/AOD_Index/Index/Index/segments_6p');
-        $state->pushFile('modules/AOD_Index/Index/Index/segments_6x');
-        $state->pushFile('modules/AOD_Index/Index/Index/segments.gen');
-        $state->pushFile('modules/AOD_Index/Index/Index/segments_7d');
-        $state->pushFile('modules/AOD_Index/Index/Index/segments_7e');
-        $state->pushFile('modules/AOD_Index/Index/Index/segments_7f');
-        $state->pushFile('modules/AOD_Index/Index/Index/segments_7g');
-        $state->pushFile('modules/AOD_Index/Index/Index/segments_7h');
-        $state->pushFile('modules/AOD_Index/Index/Index/segments_7i');
-        $state->pushGlobals();
-        $state->pushPHPConfigOptions();
-        
-        
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
 
         //populate value for aor_fields related/child object
         $_POST['aor_fields_field'][] = 'last_name';
@@ -84,92 +60,49 @@ class AOR_ReportTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         $aor_Report->save();
 
         //test for record ID to verify that record is saved
-        $this->assertTrue(isset($aor_Report->id));
-        $this->assertEquals(36, strlen($aor_Report->id));
+        self::assertTrue(isset($aor_Report->id));
+        self::assertEquals(36, strlen($aor_Report->id));
 
         //mark the record as deleted for cleanup
         $aor_Report->mark_deleted($aor_Report->id);
 
         unset($aor_Report);
-        
-        
-        // clean up
-        
-        $state->popPHPConfigOptions();
-        $state->popGlobals();
-        $state->popFile('modules/AOD_Index/Index/Index/segments_7i');
-        $state->popFile('modules/AOD_Index/Index/Index/segments_7h');
-        $state->popFile('modules/AOD_Index/Index/Index/segments_7g');
-        $state->popFile('modules/AOD_Index/Index/Index/segments_7f');
-        $state->popFile('modules/AOD_Index/Index/Index/segments_7e');
-        $state->popFile('modules/AOD_Index/Index/Index/segments_7d');
-        $state->popFile('modules/AOD_Index/Index/Index/segments.gen');
-        $state->popFile('modules/AOD_Index/Index/Index/segments_6x');
-        $state->popFile('modules/AOD_Index/Index/Index/segments_6p');
-        $state->popFile('modules/AOD_Index/Index/Index/optimization.lock.file');
-        $state->popFile('modules/AOD_Index/Index/Index/write.lock.file');
-        $state->popFile('modules/AOD_Index/Index/Index/read-lock-processing.lock.file');
-        $state->popFile('modules/AOD_Index/Index/Index/segments_3n');
-        $state->popFile('modules/AOD_Index/Index/Index/read.lock.file');
-        $state->popTable('aor_reports');
-        $state->popTable('aor_fields');
-        $state->popTable('aor_charts');
-        $state->popTable('aod_index');
-        $state->popTable('tracker');
-        $state->popTable('aod_indexevent');
     }
 
-    public function testload_report_beans()
+    public function testload_report_beans(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushGlobals();
-        
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $aor_Report->load_report_beans();
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
-        
-        // clean up
-        $state->popGlobals();
     }
 
-    public function testgetReportFields()
+    public function testgetReportFields(): void
     {
         //execute the method and verify that it returns an array
-        $aor_Report = new AOR_Report();
-        $result = $aor_Report->getReportFields();
-        $this->assertTrue(is_array($result));
+        $result = BeanFactory::newBean('AOR_Reports')->getReportFields();
+        self::assertIsArray($result);
     }
 
-    public function testbuild_report_chart()
+    public function testbuild_report_chart(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushGlobals();
-        $state->pushGlobal('dictionary');
-        $state->pushGlobal('app_list_strings');
-        $state->pushGlobal('current_user');
-        
-        // test
-        
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
         $aor_Report->report_module = 'Accounts';
-        
+
         $chartBean = BeanFactory::getBean('AOR_Charts');
         $charts = (array)$chartBean->get_full_list();
-        
 
         //execute the method and verify that it returns chart display script. strings returned vary due to included chart id.
         $result = $aor_Report->build_report_chart();
         foreach ($charts as $chart) {
-            $this->assertContains($chart->id, $result);
+            self::assertContains($chart->id, $result);
         }
-        
-        // clean up
+
         unset($GLOBALS['_SESSION']);
         unset($GLOBALS['objectList']);
         unset($GLOBALS['mod_strings']);
@@ -179,157 +112,118 @@ class AOR_ReportTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         unset($GLOBALS['disable_date_format']);
         unset($GLOBALS['fill_in_rel_depth']);
         unset($GLOBALS['currentModule']);
-        $state->popGlobal('current_user');
-        $state->popGlobal('app_list_strings');
-        $state->popGlobal('dictionary');
-        $state->popGlobals();
     }
 
-    public function testbuild_group_report()
+    public function testbuild_group_report(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushGlobals();
-        
-        // test
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
         $aor_Report->report_module = 'Accounts';
         $aor_Report->id = '1';
 
         //execute the method without any parameters and verify it returns html string
         $html1 = $aor_Report->build_group_report();
-        $this->assertGreaterThan(0, strlen($html1));
+        self::assertGreaterThan(0, strlen($html1));
 
         //execute the method wit offset parameter and verify it returns html string
         $html2 = $aor_Report->build_group_report(1);
-        $this->assertGreaterThan(0, strlen($html2));
+        self::assertGreaterThan(0, strlen($html2));
 
         //execute the method with both parameters and verify it returns html string
         $html3 = $aor_Report->build_group_report(0, false);
-        $this->assertGreaterThan(0, strlen($html3));
+        self::assertGreaterThan(0, strlen($html3));
 
         //verify that all three html strings are different.
-        $this->assertNotEquals($html1, $html2);
-        $this->assertNotEquals($html1, $html3);
-        $this->assertNotEquals($html2, $html3);
-        
-        // clean up
-        $state->popGlobals();
+        self::assertNotEquals($html1, $html2);
+        self::assertNotEquals($html1, $html3);
+        self::assertNotEquals($html2, $html3);
     }
 
-    public function testbuild_report_html()
+    public function testbuild_report_html(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushGlobals();
-        
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
         $aor_Report->report_module = 'Accounts';
 
         //execute the method without any parameters and verify it returns html string
         $html1 = $aor_Report->build_report_html();
-        $this->assertGreaterThan(0, strlen($html1));
+        self::assertGreaterThan(0, strlen($html1));
 
         //execute the method with both parameters and verify it returns html string
         $html2 = $aor_Report->build_report_html(0, false);
-        $this->assertGreaterThan(0, strlen($html2));
+        self::assertGreaterThan(0, strlen($html2));
 
         //execute the method with group and identifier parameters and verify it returns html string
         $html3 = $aor_Report->build_report_html(1, false, 'grouptest', 'testidentifier');
-        $this->assertGreaterThan(0, strlen($html3));
+        self::assertGreaterThan(0, strlen($html3));
 
         //verify that group and identifier exist in the strings
-        $this->assertContains('grouptest', $html3);
-        $this->assertContains('testidentifier', $html3);
-        
-        // clean up
-        $state->popGlobals();
+        self::assertStringContainsString('grouptest', $html3);
+        self::assertStringContainsString('testidentifier', $html3);
     }
 
-    public function testgetTotalHTML()
+    public function testGetTotalHTML(): void
     {
         //execute the method with required data preset and verify it returns expected result
-        $fields = array(
-            'label' => array(
+        $fields = [
+            'label' => [
                 'display' => 1,
                 'total' => 'SUM',
                 'label' => 'total',
                 'module' => 'Meetings',
                 'field' => 'duration_hours',
                 'params' => ''
-            )
-        );
-        $totals = array('label' => array(10, 20, 30));
-        $expected = "<table><thead class='fc-head'><tr><th>total Sum</th></tr></thead><tbody><tr class='oddListRowS1'><td>
-<span class=\"sugar_field\" id=\"duration_hours\">
-60
-</span></td></tr></tbody></table>";
 
-        $aor_Report = new AOR_Report();
-        $actual = $aor_Report->getTotalHTML($fields, $totals);
+            ]
+        ];
+        $totals = ['label' => [10, 20, 30]];
+        /** @noinspection OneTimeUseVariablesInspection */
+        $reportBean = BeanFactory::newBean('AOR_Reports');
+        $actual = $reportBean->getTotalHTML($fields, $totals);
 
-        $this->assertSame($expected, $actual);
+        self::assertStringContainsString('sugar_field', $actual);
+        self::assertStringContainsString('duration_hours', $actual);
     }
 
-    public function testcalculateTotal()
+    public function testcalculateTotal(): void
     {
         //execute the method with data preset and verify it returns expected result
         $totals = array(10, 20, 30);
 
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
 
-        $this->assertEquals('', $aor_Report->calculateTotal('', $totals));
-        $this->assertEquals(60, $aor_Report->calculateTotal('SUM', $totals));
-        $this->assertEquals(3, $aor_Report->calculateTotal('COUNT', $totals));
-        $this->assertEquals(20, $aor_Report->calculateTotal('AVG', $totals));
+        self::assertEquals('', $aor_Report->calculateTotal('', $totals));
+        self::assertEquals(60, $aor_Report->calculateTotal('SUM', $totals));
+        self::assertEquals(3, $aor_Report->calculateTotal('COUNT', $totals));
+        self::assertEquals(20, $aor_Report->calculateTotal('AVG', $totals));
     }
 
-    public function testbuild_report_csv()
+    public function testbuild_report_query(): void
     {
-
-        //this method uses exit so it cannot be tested
-
-        /*$aor_Report = new AOR_Report();
-        $aor_Report->report_module = "Accounts";
-        $aor_Report->build_report_csv();
-        */
-
-        $this->markTestIncomplete('Can Not be implemented');
-    }
-
-    public function testbuild_report_query()
-    {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushGlobals();
-        
-        
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
         $aor_Report->report_module = 'Accounts';
 
         //execute the method without any parameters and verify that it returns a non empty string
         $actual = $aor_Report->build_report_query();
-        $this->assertGreaterThanOrEqual(0, strlen($actual));
+        self::assertGreaterThanOrEqual(0, strlen($actual));
 
         //execute the method with parameter and verify that it returns a non empty string
         $actual = $aor_Report->build_report_query('name');
-        $this->assertGreaterThanOrEqual(0, strlen($actual));
-        
-        // clean up
-        $state->popGlobals();
+        self::assertGreaterThanOrEqual(0, strlen($actual));
     }
 
-    public function testbuild_report_query_select()
+    public function testbuild_report_query_select(): void
     {
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
         $aor_Report->report_module = 'Accounts';
         $query_array = array();
 
         //execute the method with parameters and verify that it returns an array.
         $actual = $aor_Report->build_report_query_select($query_array, 'name');
-        $this->assertTrue(is_array($actual));
+        self::assertIsArray($actual);
     }
 
-    public function testbuild_report_query_join()
+    public function testbuild_report_query_join(): void
     {
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
         $aor_Report->report_module = 'Accounts';
 
         //test with type custom and verify that it retunrs expected results
@@ -338,11 +232,11 @@ class AOR_ReportTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
             'contacts',
             'accounts_contacts',
             'accounts',
-            new Account(),
+            BeanFactory::newBean('Accounts'),
             'custom',
             array()
         );
-        $this->assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
 
         //test with type relationship and verify that it retunrs expected results
         $expected = array(
@@ -354,46 +248,34 @@ class AOR_ReportTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
             'contacts',
             'accounts_contacts',
             'accounts',
-            new Account(),
+            BeanFactory::newBean('Accounts'),
             'relationship',
             array()
         );
-        $this->assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
     }
 
-    public function testbuild_report_access_query()
+    public function testbuild_report_access_query(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushGlobals();
-        
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
 
         //test without alias and verify that it retunrs expected results
-        $result = $aor_Report->build_report_access_query(new AOR_Report(), '');
-        $this->assertEquals('', $result);
+        $result = $aor_Report->build_report_access_query(BeanFactory::newBean('AOR_Reports'), '');
+        self::assertEquals('', $result);
 
         //test with alias and verify that it retunrs expected results
-        $result = $aor_Report->build_report_access_query(new AOR_Report(), 'rep');
-        $this->assertEquals('', $result);
-        
-        // clean up
-        $state->popGlobals();
+        $result = $aor_Report->build_report_access_query(BeanFactory::newBean('AOR_Reports'), 'rep');
+        self::assertEquals('', $result);
     }
 
-    public function testbuild_report_query_where()
+    public function testbuild_report_query_where(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushGlobals();
-        
-        $aor_Report = new AOR_Report();
+        $aor_Report = BeanFactory::newBean('AOR_Reports');
         $aor_Report->report_module = 'Accounts';
 
         //execute the method and verify that it retunrs expected results
         $expected = array('where' => array('accounts.deleted = 0 '));
         $actual = $aor_Report->build_report_query_where();
-        $this->assertSame($expected, $actual);
-        
-        // clean up
-        $state->popGlobals();
+        self::assertSame($expected, $actual);
     }
 }

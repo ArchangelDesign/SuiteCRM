@@ -56,25 +56,6 @@ class ACLRole extends SugarBean
 
     public $created_by;
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function ACLRole()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
-
 
     // bug 16790 - missing get_summary_text method led Tracker to display SugarBean's "base implementation"
     public function get_summary_text()
@@ -122,7 +103,7 @@ class ACLRole extends SugarBean
         $user_roles = array();
 
         while ($row = DBManagerFactory::getInstance()->fetchByAssoc($result)) {
-            $role = new ACLRole();
+            $role = BeanFactory::newBean('ACLRoles');
             $role->populateFromRow($row);
             if ($getAsNameArray) {
                 $user_roles[] = $role->name;
@@ -184,7 +165,7 @@ class ACLRole extends SugarBean
         $roles = array();
 
         while ($row = $db->fetchByAssoc($result)) {
-            $role = new ACLRole();
+            $role = BeanFactory::newBean('ACLRoles');
             $role->populateFromRow($row);
             if ($returnAsArray) {
                 $roles[] = $role->toArray();
@@ -224,7 +205,7 @@ class ACLRole extends SugarBean
         $role_actions = array();
 
         while ($row = $db->fetchByAssoc($result)) {
-            $action = new ACLAction();
+            $action = BeanFactory::newBean('ACLActions');
             $action->populateFromRow($row);
             if (!empty($row['access_override'])) {
                 $action->aclaccess = $row['access_override'];

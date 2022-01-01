@@ -12,21 +12,6 @@ class SecurityGroup extends SecurityGroup_sugar
         parent::__construct();
     }
 
-    /**
-     * @deprecated 7.6 PHP4 Style Constructors are deprecated and will be remove in 8.0, please update your code
-     * @see __construct
-     */
-    public function SecurityGroup()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
-
     public $last_run = array('module' => '', 'record' => '', 'action' => '', 'response' => '');
 
     /**
@@ -363,7 +348,7 @@ class SecurityGroup extends SecurityGroup_sugar
                 if (!in_array($_REQUEST['relate_to'], array_keys($security_modules))) {
                     //check to see if relate_to is the relationship name
                     require_once 'modules/Relationships/Relationship.php';
-                    $relationship = new Relationship();
+                    $relationship = BeanFactory::newBean('Relationships');
                     $rel_module = $relationship->get_other_module(
                         $_REQUEST['relate_to'],
                         $focus_module_dir,
@@ -614,7 +599,7 @@ class SecurityGroup extends SecurityGroup_sugar
         $module_blacklist = array('SchedulersJobs', 'Schedulers', 'Trackers');
 
         require_once 'modules/Relationships/Relationship.php';
-        $rs = new Relationship();
+        $rs = BeanFactory::newBean('Relationships');
         $query = "SELECT lhs_module, rhs_module FROM $rs->table_name WHERE deleted=0 AND (lhs_module = 'SecurityGroups' OR rhs_module='SecurityGroups')";
         $GLOBALS['log']->debug("SecuritySuite: Get SecuritySuite Enabled Modules: $query");
         $result = $rs->db->query($query);

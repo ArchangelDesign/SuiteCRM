@@ -1,41 +1,38 @@
 <?php
 
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
 
-class OAuthKeyTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+class OAuthKeyTest extends SuitePHPUnitFrameworkTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         global $current_user;
         get_sugar_config_defaults();
-        $current_user = new User();
+        $current_user = BeanFactory::newBean('Users');
     }
 
-    public function testOAuthKey()
+    public function testOAuthKey(): void
     {
-        //execute the contructor and check for the Object type and  attributes
-        $oauthKey = new OAuthKey();
+        // Execute the constructor and check for the Object type and  attributes
+        $oauthKey = BeanFactory::newBean('OAuthKeys');
 
-        $this->assertInstanceOf('OAuthKey', $oauthKey);
-        $this->assertInstanceOf('Basic', $oauthKey);
-        $this->assertInstanceOf('SugarBean', $oauthKey);
+        self::assertInstanceOf('OAuthKey', $oauthKey);
+        self::assertInstanceOf('Basic', $oauthKey);
+        self::assertInstanceOf('SugarBean', $oauthKey);
 
-        $this->assertAttributeEquals('OAuthKeys', 'module_dir', $oauthKey);
-        $this->assertAttributeEquals('OAuthKey', 'object_name', $oauthKey);
-        $this->assertAttributeEquals('oauth_consumer', 'table_name', $oauthKey);
+        self::assertEquals('OAuthKeys', $oauthKey->module_dir);
+        self::assertEquals('OAuthKey', $oauthKey->object_name);
+        self::assertEquals('oauth_consumer', $oauthKey->table_name);
 
-        $this->assertAttributeEquals(true, 'disable_row_level_security', $oauthKey);
+        self::assertEquals(true, $oauthKey->disable_row_level_security);
     }
 
-    public function testMain()
+    public function testMain(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('tracker');
-        $state->pushTable('aod_index');
-
         // test
-        $oauthKey = new OAuthKey();
+        $oauthKey = BeanFactory::newBean('OAuthKeys');
 
         //preset required attributes
         $oauthKey->name = 'test';
@@ -52,44 +49,40 @@ class OAuthKeyTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
 
         //test mark_deleted method
         $this->mark_deleted($oauthKey->id);
-        
-        // clean up
-        $state->popTable('aod_index');
-        $state->popTable('tracker');
     }
 
-    public function getByKey($key)
+    public function getByKey($key): void
     {
-        $oauthKey = new OAuthKey();
+        $oauthKey = BeanFactory::newBean('OAuthKeys');
 
         //test with a invalid id
         $result = $oauthKey->getByKey('');
-        $this->assertEquals(false, $result);
+        self::assertEquals(false, $result);
 
         //test with a valid id
         $result = $oauthKey->getByKey($key);
-        $this->assertInstanceOf('OAuthKey', $result);
+        self::assertInstanceOf('OAuthKey', $result);
     }
 
-    public function fetchKey($key)
+    public function fetchKey($key): void
     {
         //test with a invalid id
         $result = OAuthKey::fetchKey('');
-        $this->assertEquals(false, $result);
+        self::assertEquals(false, $result);
 
         //test with a valid id
         $result = OAuthKey::fetchKey($key);
-        $this->assertInstanceOf('OAuthKey', $result);
+        self::assertInstanceOf('OAuthKey', $result);
     }
 
-    public function mark_deleted($id)
+    public function mark_deleted($id): void
     {
-        $oauthKey = new OAuthKey();
+        $oauthKey = BeanFactory::newBean('OAuthKeys');
 
         $oauthKey->mark_deleted($id);
 
         //verify that record is deleted
         $result = $oauthKey->getByKey($id);
-        $this->assertEquals(false, $result);
+        self::assertEquals(false, $result);
     }
 }

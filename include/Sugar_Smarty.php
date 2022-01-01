@@ -38,6 +38,10 @@
  * display the words "Powered by SugarCRM" and "Supercharged by SuiteCRM".
  */
 
+if (!defined('sugarEntry') || !sugarEntry) {
+    die('Not A Valid Entry Point');
+}
+
 if (!defined('SUGAR_SMARTY_DIR')) {
     define('SUGAR_SMARTY_DIR', sugar_cached('smarty/'));
 }
@@ -82,19 +86,7 @@ class Sugar_Smarty extends Smarty
         $this->assign("VERSION_MARK", getVersionedPath(''));
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function Sugar_Smarty()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
+
 
     /**
      * Override default _unlink method call to fix Bug 53010
@@ -144,24 +136,36 @@ class Sugar_Smarty extends Smarty
                 $resource_name = "themes" . DIRECTORY_SEPARATOR . $theme_directory . DIRECTORY_SEPARATOR . $resource_name;
             }
         }
-        ///
 
         $this->assign('APP_LIST_STRINGS', $app_list_strings);
         $this->assign('APP', $app_strings);
         $this->assign('MOD', $mod_strings);
         $this->assign('APP_CONFIG', $sugar_config);
+        $errorLevelStored = 0;
 
-        $state = new SuiteCRM\StateSaver();
-        $state->pushErrorLevel('sugar_smarty_errors', 'error_reporting', false);
-
-        if (!(isset($sugar_config['developerMode']) && $sugar_config['developerMode'])) {
+        if (!empty($sugar_config['developerMode'])) {
             $level = isset($sugar_config['smarty_error_level']) ? $sugar_config['smarty_error_level'] : 0;
+            $errorLevelStored = error_reporting();
             error_reporting($level);
         }
         $fetch = parent::fetch(get_custom_file_if_exists($resource_name), $cache_id, $compile_id, $display);
-        $state->popErrorLevel('sugar_smarty_errors', 'error_reporting', false);
+
+        if (!empty($sugar_config['developerMode'])) {
+            error_reporting($errorLevelStored);
+        }
 
         return $fetch;
+    }
+
+    /**
+     * called for included templates
+     * @param string $_smarty_include_tpl_file
+     * @param string $_smarty_include_vars
+     */
+    function _smarty_include($params)
+    {
+        $params['smarty_include_tpl_file'] = get_custom_file_if_exists($params['smarty_include_tpl_file']);
+        parent::_smarty_include($params);
     }
 
     /**

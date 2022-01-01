@@ -98,19 +98,7 @@ class Note extends File
         parent::__construct();
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function Note()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
+
 
 
     public function safeAttachmentName()
@@ -273,7 +261,7 @@ class Note extends File
         }
 
         if (isset($this->contact_id) && $this->contact_id != '') {
-            $contact = new Contact();
+            $contact = BeanFactory::newBean('Contacts');
             $contact->retrieve($this->contact_id);
             if (isset($contact->id)) {
                 $this->contact_name = $contact->full_name;
@@ -298,7 +286,7 @@ class Note extends File
             }
         }
         if (isset($this->contact_id) && $this->contact_id != '') {
-            $contact = new Contact();
+            $contact = BeanFactory::newBean('Contacts');
             $contact->retrieve($this->contact_id);
             if (isset($contact->id)) {
                 $this->contact_name = $contact->full_name;

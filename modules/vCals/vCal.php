@@ -79,22 +79,6 @@
             $this->disable_row_level_security = true;
         }
 
-        /**
-         * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8,
-         *     please update your code, use __construct instead
-         */
-        public function vCal()
-        {
-            $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-            if (isset($GLOBALS['log'])) {
-                $GLOBALS['log']->deprecated($deprecatedMessage);
-            } else {
-                trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-            }
-            self::__construct();
-        }
-
-
         public function get_summary_text()
         {
             return "";
@@ -119,7 +103,7 @@
             $ical_array = array();
             // First, get the list of IDs.
             $query = "SELECT id from vcals where user_id='{$user_bean->id}' AND type='vfb' AND deleted=0";
-            $vCal = new vCal();
+            $vCal = BeanFactory::newBean('vCals');
             $vcal_arr = $this->build_related_list($query, $vCal);
 
             foreach ($vcal_arr as $focus) {
@@ -251,7 +235,7 @@
         // caches vcal for Activities in Sugar database
         public static function cache_sugar_vcal_freebusy(&$user_focus)
         {
-            $focus = new vCal();
+            $focus = BeanFactory::newBean('vCals');
             // set freebusy members and save
             $arr = array('user_id' => $user_focus->id, 'type' => 'vfb', 'source' => 'sugar');
             $focus->retrieve_by_string_fields($arr);

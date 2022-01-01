@@ -1,37 +1,29 @@
 <?php
 
-class AOR_ConditionTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
+
+class AOR_ConditionTest extends SuitePHPUnitFrameworkTestCase
 {
-    public function testAOR_Condition()
+    public function testAOR_Condition(): void
     {
+        // Execute the constructor and check for the Object type and  attributes
+        $aor_Condition = BeanFactory::newBean('AOR_Conditions');
+        self::assertInstanceOf('AOR_Condition', $aor_Condition);
+        self::assertInstanceOf('Basic', $aor_Condition);
+        self::assertInstanceOf('SugarBean', $aor_Condition);
 
-        //execute the contructor and check for the Object type and  attributes
-        $aor_Condition = new AOR_Condition();
-        $this->assertInstanceOf('AOR_Condition', $aor_Condition);
-        $this->assertInstanceOf('Basic', $aor_Condition);
-        $this->assertInstanceOf('SugarBean', $aor_Condition);
-
-        $this->assertAttributeEquals('AOR_Conditions', 'module_dir', $aor_Condition);
-        $this->assertAttributeEquals('AOR_Condition', 'object_name', $aor_Condition);
-        $this->assertAttributeEquals('aor_conditions', 'table_name', $aor_Condition);
-        $this->assertAttributeEquals(true, 'new_schema', $aor_Condition);
-        $this->assertAttributeEquals(true, 'disable_row_level_security', $aor_Condition);
-        $this->assertAttributeEquals(true, 'importable', $aor_Condition);
-        $this->assertAttributeEquals(false, 'tracker_visibility', $aor_Condition);
+        self::assertEquals('AOR_Conditions', $aor_Condition->module_dir);
+        self::assertEquals('AOR_Condition', $aor_Condition->object_name);
+        self::assertEquals('aor_conditions', $aor_Condition->table_name);
+        self::assertEquals(true, $aor_Condition->new_schema);
+        self::assertEquals(true, $aor_Condition->disable_row_level_security);
+        self::assertEquals(true, $aor_Condition->importable);
+        self::assertEquals(false, $aor_Condition->tracker_visibility);
     }
 
-    public function testsave_lines()
+    public function testsave_lines(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('aod_indexevent');
-        $state->pushTable('aod_index');
-        $state->pushTable('aor_conditions');
-        $state->pushTable('tracker');
-        $state->pushGlobals();
-        
-        
-
-        $aor_Condition = new AOR_Condition();
+        $aor_Condition = BeanFactory::newBean('AOR_Conditions');
 
         //preset the required data
         $post_data = array();
@@ -42,19 +34,12 @@ class AOR_ConditionTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         $post_data['operator'][] = 'test';
         $post_data['value_type'][] = 'test type';
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
-            $aor_Condition->save_lines($post_data, new AOR_Report());
-            $this->assertTrue(true);
+            $aor_Condition->save_lines($post_data, BeanFactory::newBean('AOR_Reports'));
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
-        
-        // clean up
-        $state->popGlobals();
-        $state->popTable('tracker');
-        $state->popTable('aor_conditions');
-        $state->popTable('aod_index');
-        $state->popTable('aod_indexevent');
     }
 }

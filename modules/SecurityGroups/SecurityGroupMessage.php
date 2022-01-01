@@ -44,19 +44,7 @@ class SecurityGroupMessage extends Basic
         parent::__construct();
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function SecurityGroupMessage()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
+
 
 
 
@@ -71,7 +59,7 @@ class SecurityGroupMessage extends Basic
             $securitygroup_name = "All";
         } else {
             require_once('modules/SecurityGroups/SecurityGroup.php');
-            $securitygroup = new SecurityGroup();
+            $securitygroup = BeanFactory::newBean('SecurityGroups');
             $securitygroup->retrieve($data['SECURITYGROUP_ID']);
             $securitygroup_name = $securitygroup->name;
 
@@ -89,7 +77,7 @@ class SecurityGroupMessage extends Basic
             $username = "Unknown";
         } else {
             require_once('modules/Users/User.php');
-            $user = new User();
+            $user = BeanFactory::newBean('Users');
             $user->retrieve($data['CREATED_BY']);
             $username = $user->user_name;
         }

@@ -47,7 +47,7 @@ class UpgradeSavedSearch
     {
         $result = DBManagerFactory::getInstance()->query("SELECT id FROM saved_search");
         while ($row = DBManagerFactory::getInstance()->fetchByAssoc($result)) {
-            $focus = new SavedSearch();
+            $focus = BeanFactory::newBean('SavedSearch');
             $focus->retrieve($row['id']);
             $contents = unserialize(base64_decode($focus->contents));
             $has_team_name_saved = isset($contents['team_name_advanced']) || isset($contents['team_name_basic']) ? true : false;
@@ -134,17 +134,5 @@ class UpgradeSavedSearch
         } //while
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function UpgradeSavedSearch()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
+
 }

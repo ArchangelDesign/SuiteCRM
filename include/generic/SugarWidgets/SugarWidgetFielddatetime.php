@@ -54,21 +54,6 @@ class SugarWidgetFieldDateTime extends SugarWidgetReportField
         parent::__construct($layout_manager);
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function SugarWidgetFieldDateTime($layout_manager)
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct($layout_manager);
-    }
-
-
     // get the reporter attribute
     // deprecated, now called in the constructor
     /**
@@ -89,7 +74,7 @@ class SugarWidgetFieldDateTime extends SugarWidgetReportField
             return null;
         }
 
-        $this->assigned_user = new User();
+        $this->assigned_user = BeanFactory::newBean('Users');
         $this->assigned_user->retrieve($report_def_str['assigned_user_id']);
         return $this->assigned_user;
     }

@@ -416,8 +416,7 @@ class ModulesCest
 
         $document_name = $faker->name();
         // Publish date
-        $active_datetime = new \DateTime();
-        $active_date = $active_datetime->format(DATE_ATOM);
+        $active_date = (new \DateTime())->format(DATE_ATOM);
 
         $payload = json_encode(
             array(
@@ -591,14 +590,14 @@ class ModulesCest
 
         $response = json_decode($I->grabResponse(), true);
         $I->assertArrayHasKey('data', $response);
-        $I->assertTrue(is_array($response['data']));
+        $I->assertIsArray($response['data']);
 
         if (!empty($response['data'])) {
             $I->assertTrue(isset($response['data']['0']));
             $I->assertTrue(isset($response['data']['0']['id']));
             $I->assertTrue(isset($response['data']['0']['type']));
             $I->assertTrue(isset($response['data']['0']['attributes']));
-            $I->assertTrue(is_array($response['data']['0']['attributes']));
+            $I->assertIsArray($response['data']['0']['attributes']);
         }
 
         $I->assertArrayHasKey('links', $response);
@@ -632,14 +631,14 @@ class ModulesCest
 
         $response = json_decode($I->grabResponse(), true);
         $I->assertArrayHasKey('data', $response);
-        $I->assertTrue(is_array($response['data']));
+        $I->assertIsArray($response['data']);
 
         if (!empty($response['data'])) {
             $I->assertTrue(isset($response['data']['0']));
             $I->assertTrue(isset($response['data']['0']['id']));
             $I->assertTrue(isset($response['data']['0']['type']));
             $I->assertTrue(isset($response['data']['0']['attributes']));
-            $I->assertTrue(is_array($response['data']['0']['attributes']));
+            $I->assertIsArray($response['data']['0']['attributes']);
         }
 
         $I->assertArrayHasKey('links', $response);
@@ -1197,7 +1196,7 @@ class ModulesCest
         $I->sendJwtAuthorisation();
         $I->sendJsonApiContentNegotiation();
         // Replace the relationships with just one of the related items
-        // We should only see the the item we have posted in the responses
+        // We should only see the item we have posted in the responses
         $payload = json_encode(
             array(
                 'data' => array(
@@ -1260,7 +1259,7 @@ class ModulesCest
         $I->sendJsonApiContentNegotiation();
 
         // Replace the relationships with just one of the related items
-        // We should only see the the item we have posted in the responses
+        // We should only see the item we have posted in the responses
         $payload = json_encode(
             array(
                 'data' => array()

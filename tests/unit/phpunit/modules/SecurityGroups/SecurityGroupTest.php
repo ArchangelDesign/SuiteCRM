@@ -1,39 +1,34 @@
 <?php
 
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
 
-class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+class SecurityGroupTest extends SuitePHPUnitFrameworkTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         global $current_user;
         get_sugar_config_defaults();
-        $current_user = new User();
+        $current_user = BeanFactory::newBean('Users');
     }
-    public function testSecurityGroup()
+    public function testSecurityGroup(): void
     {
+        // Execute the constructor and check for the Object type and  attributes
+        $securityGroup = BeanFactory::newBean('SecurityGroups');
 
-        //execute the contructor and check for the Object type and  attributes
-        $securityGroup = new SecurityGroup();
+        self::assertInstanceOf('SecurityGroup', $securityGroup);
+        self::assertInstanceOf('Basic', $securityGroup);
+        self::assertInstanceOf('SugarBean', $securityGroup);
 
-        $this->assertInstanceOf('SecurityGroup', $securityGroup);
-        $this->assertInstanceOf('Basic', $securityGroup);
-        $this->assertInstanceOf('SugarBean', $securityGroup);
-
-        $this->assertAttributeEquals('securitygroups', 'table_name', $securityGroup);
-        $this->assertAttributeEquals('SecurityGroups', 'module_dir', $securityGroup);
-        $this->assertAttributeEquals('SecurityGroup', 'object_name', $securityGroup);
+        self::assertEquals('securitygroups', $securityGroup->table_name);
+        self::assertEquals('SecurityGroups', $securityGroup->module_dir);
+        self::assertEquals('SecurityGroup', $securityGroup->object_name);
     }
 
-    public function testgetGroupWhere()
+    public function testgetGroupWhere(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        
-        
-        
-
-        $securityGroup = new SecurityGroup();
+        $securityGroup = BeanFactory::newBean('SecurityGroups');
 
         //test with securitygroups module
         $expected = " securitygroups.id in (
@@ -42,8 +37,8 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
                     and secu.user_id = '1'
                 where secg.deleted = 0
             )";
-        $actual = $securityGroup->getGroupWhere('securitygroups', 'SecurityGroups', 1);
-        $this->assertSame($expected, $actual);
+        $actual = $securityGroup::getGroupWhere('securitygroups', 'SecurityGroups', 1);
+        self::assertSame($expected, $actual);
 
         //test with //test with securitygroups module module
         $table_name = 'users';
@@ -61,15 +56,13 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
                                AND secr.module = '$module'
                        WHERE   secr.record_id = ".$table_name.".id
                                AND secg.deleted = 0) ";
-        $actual = $securityGroup->getGroupWhere($table_name, $module, $user_id);
-        $this->assertSame($expected, $actual);
-        
-        // clean up
+        $actual = $securityGroup::getGroupWhere($table_name, $module, $user_id);
+        self::assertSame($expected, $actual);
     }
 
-    public function testgetGroupUsersWhere()
+    public function testgetGroupUsersWhere(): void
     {
-        $securityGroup = new SecurityGroup();
+        $securityGroup = BeanFactory::newBean('SecurityGroups');
 
         $expected = " users.id in (
             select sec.user_id from securitygroups_users sec
@@ -79,12 +72,12 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         )";
         $actual = $securityGroup::getGroupUsersWhere(1);
 
-        $this->assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
     }
 
-    public function testgetGroupJoin()
+    public function testgetGroupJoin(): void
     {
-        $securityGroup = new SecurityGroup();
+        $securityGroup = BeanFactory::newBean('SecurityGroups');
 
         //test with securitygroups module
         $expected = " LEFT JOIN (select distinct secg.id from securitygroups secg
@@ -92,8 +85,8 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
             and secu.user_id = '1'
     where secg.deleted = 0
 ) securitygroup_join on securitygroup_join.id = securitygroups.id ";
-        $actual = $securityGroup->getGroupJoin('securitygroups', 'SecurityGroups', 1);
-        $this->assertSame($expected, $actual);
+        $actual = $securityGroup::getGroupJoin('securitygroups', 'SecurityGroups', 1);
+        self::assertSame($expected, $actual);
 
         //test with //test with securitygroups module
         $expected = " LEFT JOIN (select distinct secr.record_id as id from securitygroups secg
@@ -103,13 +96,13 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
              and secr.module = 'Users'
     where secg.deleted = 0
 ) securitygroup_join on securitygroup_join.id = users.id ";
-        $actual = $securityGroup->getGroupJoin('users', 'Users', 1);
-        $this->assertSame($expected, $actual);
+        $actual = $securityGroup::getGroupJoin('users', 'Users', 1);
+        self::assertSame($expected, $actual);
     }
 
-    public function testgetGroupUsersJoin()
+    public function testgetGroupUsersJoin(): void
     {
-        $securityGroup = new SecurityGroup();
+        $securityGroup = BeanFactory::newBean('SecurityGroups');
 
         $expected = " LEFT JOIN (
             select distinct sec.user_id as id from securitygroups_users sec
@@ -117,196 +110,164 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
                 and secu.user_id = '1'
             where sec.deleted = 0
         ) securitygroup_join on securitygroup_join.id = users.id ";
-        $actual = $securityGroup->getGroupUsersJoin(1);
-        $this->assertSame($expected, $actual);
+        $actual = $securityGroup::getGroupUsersJoin(1);
+        self::assertSame($expected, $actual);
     }
 
-    public function testgroupHasAccess()
+    public function testgroupHasAccess(): void
     {
-
         //test for listview
         $result = SecurityGroup::groupHasAccess('', '[SELECT_ID_LIST]');
-        $this->assertEquals(true, $result);
+        self::assertEquals(true, $result);
 
         //test with invalid values
         $result = SecurityGroup::groupHasAccess('', '');
-        $this->assertEquals(false, $result);
+        self::assertEquals(false, $result);
 
         //test with valid values
         $result = SecurityGroup::groupHasAccess('Users', '1');
-        $this->assertEquals(false, $result);
+        self::assertEquals(false, $result);
     }
 
-    public function testinherit()
+    public function testinherit(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushGlobals();
-        
-        // test
-        $account = new Account();
+        $account = BeanFactory::newBean('Accounts');
         $account->id = 1;
 
         $_REQUEST['subpanel_field_name'] = 'id';
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             SecurityGroup::inherit($account, false);
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
-        
-        // clean up
-        $state->popGlobals();
     }
 
-    public function testassign_default_groups()
+    public function testassign_default_groups(): void
     {
-        $account = new Account();
+        $account = BeanFactory::newBean('Accounts');
         $account->id = 1;
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             SecurityGroup::assign_default_groups($account, false);
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
     }
 
-    public function testinherit_creator()
+    public function testinherit_creator(): void
     {
-        $account = new Account();
+        $account = BeanFactory::newBean('Accounts');
         $account->id = 1;
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             SecurityGroup::inherit_creator($account, false);
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
     }
 
-    public function testinherit_assigned()
+    public function testinherit_assigned(): void
     {
-        $account = new Account();
+        $account = BeanFactory::newBean('Accounts');
         $account->id = 1;
         $account->assigned_user_id = 1;
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             SecurityGroup::inherit_assigned($account, false);
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
     }
 
-    public function testinherit_parent()
+    public function testinherit_parent(): void
     {
-        $account = new Account();
+        $account = BeanFactory::newBean('Accounts');
         $account->id = 1;
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             SecurityGroup::inherit_parent($account, false);
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
     }
 
-    public function testinherit_parentQuery()
+    public function testinherit_parentQuery(): void
     {
-        $account = new Account();
+        $account = BeanFactory::newBean('Accounts');
         $account->id = 1;
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             SecurityGroup::inherit_parentQuery($account, 'Accounts', 1, 1, $account->module_dir);
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
     }
 
-    public function testinheritOne()
+    public function testinheritOne(): void
     {
-        $securityGroup = new SecurityGroup();
-
-        $result = $securityGroup->inheritOne(1, 1, 'Accounts');
-        $this->assertEquals(false, $result);
+        $result = BeanFactory::newBean('SecurityGroups')::inheritOne(1, 1, 'Accounts');
+        self::assertEquals(false, $result);
     }
 
-    public function testgetMembershipCount()
+    public function testgetMembershipCount(): void
     {
-        // save state
-        $state = new \SuiteCRM\StateSaver();
-        $state->pushGlobals();
-
-        // test
-        $securityGroup = new SecurityGroup();
-
-        $result = $securityGroup->getMembershipCount('1');
-        $this->assertEquals(0, $result);
-
-        // clean up
-        $state->popGlobals();
+        $result = BeanFactory::newBean('SecurityGroups')::getMembershipCount('1');
+        self::assertEquals(0, $result);
     }
 
-    public function testSaveAndRetrieveAndRemoveDefaultGroups()
+    public function testSaveAndRetrieveAndRemoveDefaultGroups(): void
     {
-        // save state
-        $state = new \SuiteCRM\StateSaver();
-        $state->pushTable('aod_index');
-        $state->pushTable('securitygroups');
-        $state->pushTable('tracker');
-
-        // test
-        // unset and reconnect Db to resolve mysqli fetch exeception
+        // Unset and reconnect Db to resolve mysqli fetch exception
         $db = DBManagerFactory::getInstance();
         $db->disconnect();
         unset($db->database);
         $db->checkConnection();
 
-        $securityGroup = new SecurityGroup();
+        $securityGroup = BeanFactory::newBean('SecurityGroups');
 
         //create a security group first
         $securityGroup->name = 'test';
         $securityGroup->save();
 
         //execute saveDefaultGroup method
-        $securityGroup->saveDefaultGroup($securityGroup->id, 'test_module');
+        $securityGroup::saveDefaultGroup($securityGroup->id, 'test_module');
 
         //execute retrieveDefaultGroups method
-        $result = $securityGroup->retrieveDefaultGroups();
+        $result = $securityGroup::retrieveDefaultGroups();
 
         //verify that default group is created
-        $this->assertTrue(is_array($result));
-        $this->assertGreaterThan(0, count($result));
+        self::assertIsArray($result);
+        self::assertGreaterThan(0, count($result));
 
         //execute removeDefaultGroup method for each default group
         foreach ($result as $key => $value) {
-            $securityGroup->removeDefaultGroup($key);
+            $securityGroup::removeDefaultGroup($key);
         }
 
         //retrieve back and verify that default securith groups are deleted
-        $result = $securityGroup->retrieveDefaultGroups();
-        $this->assertEquals(0, count($result));
+        $result = $securityGroup::retrieveDefaultGroups();
+        self::assertCount(0, $result);
 
         //delete the security group as well for cleanup
         $securityGroup->mark_deleted($securityGroup->id);
-        
-        // clean up
-        $state->popTable('tracker');
-        $state->popTable('securitygroups');
-        $state->popTable('aod_index');
     }
 
-    public function testgetSecurityModules()
+    public function testgetSecurityModules(): void
     {
-        $securityGroup = new SecurityGroup();
+        $securityGroup = BeanFactory::newBean('SecurityGroups');
 
         $expected = array(
             'Meetings',
@@ -353,57 +314,50 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
             'Surveys' => 'Surveys',
         );
 
-        $actual = $securityGroup->getSecurityModules();
+        $actual = $securityGroup::getSecurityModules();
         $actualKeys = array_keys($actual);
         sort($expected);
         sort($actualKeys);
-        $this->assertSame($expected, $actualKeys);
+        self::assertSame($expected, $actualKeys);
     }
 
-    public function testgetLinkName()
+    public function testgetLinkName(): void
     {
-        //unset and reconnect Db to resolve mysqli fetch exeception
+        // Unset and reconnect Db to resolve mysqli fetch exceptions
         $db = DBManagerFactory::getInstance();
         $db->disconnect();
         unset($db->database);
         $db->checkConnection();
 
-        $securityGroup = new SecurityGroup();
+        $securityGroup = BeanFactory::newBean('SecurityGroups');
 
-        $result = $securityGroup->getLinkName('Accounts', 'Contacts');
-        $this->assertEquals('contacts', $result);
+        $result = $securityGroup::getLinkName('Accounts', 'Contacts');
+        self::assertEquals('contacts', $result);
 
-        $result = $securityGroup->getLinkName('SecurityGroups', 'ACLRoles');
-        $this->assertEquals('aclroles', $result);
+        $result = $securityGroup::getLinkName('SecurityGroups', 'ACLRoles');
+        self::assertEquals('aclroles', $result);
     }
 
-    public function testaddGroupToRecord()
+    public function testaddGroupToRecord(): void
     {
-        $state = new SuiteCRM\StateSaver();
-        $state->pushTable('securitygroups_records');
-        
-        // test
         // unset and reconnect Db to resolve mysqli fetch exeception
         $db = DBManagerFactory::getInstance();
         //$db->disconnect();
         unset($db->database);
         $db->checkConnection();
 
-        $securityGroup = new SecurityGroup();
+        $securityGroup = BeanFactory::newBean('SecurityGroups');
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
             $securityGroup->addGroupToRecord('Accounts', 1, 1);
-            $this->assertTrue(true);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
-        
-        // clean up
-        $state->popTable('securitygroups_records');
     }
 
-    public function testremoveGroupFromRecord()
+    public function testremoveGroupFromRecord(): void
     {
         //unset and reconnect Db to resolve mysqli fetch exeception
         $db = DBManagerFactory::getInstance();
@@ -411,18 +365,18 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         unset($db->database);
         $db->checkConnection();
 
-        $securityGroup = new SecurityGroup();
+        $securityGroup = BeanFactory::newBean('SecurityGroups');
 
-        //execute the method and test if it works and does not throws an exception.
+        // Execute the method and test that it works and doesn't throw an exception.
         try {
-            $securityGroup->removeGroupFromRecord('Accounts', 1, 1);
-            $this->assertTrue(true);
+            $securityGroup::removeGroupFromRecord('Accounts', 1, 1);
+            self::assertTrue(true);
         } catch (Exception $e) {
-            $this->fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
+            self::fail($e->getMessage() . "\nTrace:\n" . $e->getTraceAsString());
         }
     }
 
-    public function testgetUserSecurityGroups()
+    public function testgetUserSecurityGroups(): void
     {
         //unset and reconnect Db to resolve mysqli fetch exeception
         $db = DBManagerFactory::getInstance();
@@ -430,14 +384,12 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         unset($db->database);
         $db->checkConnection();
 
-        $securityGroup = new SecurityGroup();
+        $result = BeanFactory::newBean('SecurityGroups')::getUserSecurityGroups('1');
 
-        $result = $securityGroup->getUserSecurityGroups('1');
-
-        $this->assertTrue(is_array($result));
+        self::assertIsArray($result);
     }
 
-    public function testgetAllSecurityGroups()
+    public function testgetAllSecurityGroups(): void
     {
         //unset and reconnect Db to resolve mysqli fetch exeception
         $db = DBManagerFactory::getInstance();
@@ -445,14 +397,12 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         unset($db->database);
         $db->checkConnection();
 
-        $securityGroup = new SecurityGroup();
+        $result = BeanFactory::newBean('SecurityGroups')::getAllSecurityGroups();
 
-        $result = $securityGroup->getAllSecurityGroups();
-
-        $this->assertTrue(is_array($result));
+        self::assertIsArray($result);
     }
 
-    public function testgetMembers()
+    public function testgetMembers(): void
     {
         //unset and reconnect Db to resolve mysqli fetch exeception
         $db = DBManagerFactory::getInstance();
@@ -460,14 +410,12 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         unset($db->database);
         $db->checkConnection();
 
-        $securityGroup = new SecurityGroup();
+        $result = BeanFactory::newBean('SecurityGroups')->getMembers();
 
-        $result = $securityGroup->getMembers();
-
-        $this->assertTrue(is_array($result));
+        self::assertIsArray($result);
     }
 
-    public function testgetPrimaryGroupID()
+    public function testgetPrimaryGroupID(): void
     {
         //unset and reconnect Db to resolve mysqli fetch exeception
         $db = DBManagerFactory::getInstance();
@@ -475,10 +423,8 @@ class SecurityGroupTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         unset($db->database);
         $db->checkConnection();
 
-        $securityGroup = new SecurityGroup();
+        $result = BeanFactory::newBean('SecurityGroups')::getPrimaryGroupID();
 
-        $result = $securityGroup->getPrimaryGroupID();
-
-        $this->assertEquals(null, $result);
+        self::assertEquals(null, $result);
     }
 }

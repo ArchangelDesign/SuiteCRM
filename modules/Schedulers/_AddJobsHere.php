@@ -107,14 +107,14 @@ function pollMonitoredInboxes()
 
     require_once('modules/Emails/EmailUI.php');
 
-    $ie = new InboundEmail();
+    $ie = BeanFactory::newBean('InboundEmail');
     $emailUI = new EmailUI();
     $r = $ie->db->query('SELECT id, name FROM inbound_email WHERE is_personal = 0 AND deleted=0 AND status=\'Active\' AND mailbox_type != \'bounce\'');
     $GLOBALS['log']->debug('Just got Result from get all Inbounds of Inbound Emails');
 
     while ($a = $ie->db->fetchByAssoc($r)) {
         $GLOBALS['log']->debug('In while loop of Inbound Emails');
-        $ieX = new InboundEmail();
+        $ieX = BeanFactory::newBean('InboundEmail');
         $ieX->retrieve($a['id']);
         $mailboxes = $ieX->mailboxarray;
         foreach ($mailboxes as $mbox) {
@@ -219,7 +219,7 @@ function pollMonitoredInboxes()
                                 /*If the group folder doesn't exist then download only those messages
                                  which has caseid in message*/
                                 $ieX->getMessagesInEmailCache($msgNo, $uid);
-                                $email = new Email();
+                                $email = BeanFactory::newBean('Emails');
                                 $header = $ieX->getImap()->getHeaderInfo($msgNo);
                                 $email->name = $ieX->handleMimeHeaderDecode($header->subject);
                                 $email->from_addr = $ieX->convertImapToSugarEmailAddress($header->from);
@@ -374,7 +374,7 @@ function trimTracker()
     $GLOBALS['log']->info('----->Scheduler fired job of type trimTracker()');
     $db = DBManagerFactory::getInstance();
 
-    $admin = new Administration();
+    $admin = BeanFactory::newBean('Administration');
     $admin->retrieveSettings('tracker');
     require('modules/Trackers/config.php');
     $trackerConfig = $tracker_config;
@@ -388,7 +388,7 @@ function trimTracker()
             continue;
         }
 
-        $timeStamp = db_convert("'" . $timedate->asDb($timedate->getNow()->get("-" . $prune_interval . " days")) . "'", "datetime");
+        $timeStamp = DBManagerFactory::getInstance()->convert("'" . $timedate->asDb($timedate->getNow()->get("-" . $prune_interval . " days")) . "'", "datetime");
         if ($tableName == 'tracker_sessions') {
             $query = "DELETE FROM $tableName WHERE date_end < $timeStamp";
         } else {
@@ -410,11 +410,11 @@ function pollMonitoredInboxesForBouncedCampaignEmails()
     global $dictionary;
 
 
-    $ie = new InboundEmail();
+    $ie = BeanFactory::newBean('InboundEmail');
     $r = $ie->db->query('SELECT id FROM inbound_email WHERE deleted=0 AND status=\'Active\' AND mailbox_type=\'bounce\'');
 
     while ($a = $ie->db->fetchByAssoc($r)) {
-        $ieX = new InboundEmail();
+        $ieX = BeanFactory::newBean('InboundEmail');
         $ieX->retrieve($a['id']);
         $ieX->connectMailserver();
         $ieX->importMessages();
@@ -617,8 +617,14 @@ function pollMonitoredInboxesAOP()
                     $isGroupFolderExists = false;
                     $users = array();
                     if ($groupFolderId != null && $groupFolderId != "") {
+                        // FIX #6994 - Unable to retrieve Sugar Folder due to incorrect groupFolderId
                         $sugarFolder->retrieve($groupFolderId);
-                        $isGroupFolderExists = true;
+                        if (empty($sugarFolder->id)) {
+                            $sugarFolder->retrieve($aopInboundEmailX->id);
+                        }
+                        if (!empty($sugarFolder->id)) {
+                            $isGroupFolderExists = true;
+                        }
                     } // if
                     $messagesToDelete = array();
                     if ($aopInboundEmailX->isMailBoxTypeCreateCase()) {
@@ -652,7 +658,7 @@ function pollMonitoredInboxesAOP()
                                         !isset($aopInboundEmailX->email->id) || !$aopInboundEmailX->email->id) &&
                                         $validatior->isValidId($emailId)
                                     ) {
-                                        $aopInboundEmailX->email = new Email();
+                                        $aopInboundEmailX->email = BeanFactory::newBean('Emails');
                                         if (!$aopInboundEmailX->email->retrieve($emailId)) {
                                             throw new Exception('Email retrieving error to handle case create, email id was: ' . $emailId);
                                         }
@@ -668,7 +674,7 @@ function pollMonitoredInboxesAOP()
                                  which has caseid in message*/
 
                                 $aopInboundEmailX->getMessagesInEmailCache($msgNo, $uid);
-                                $email = new Email();
+                                $email = BeanFactory::newBean('Emails');
                                 $header = $aopInboundEmailX->getImap()->getHeaderInfo($msgNo);
                                 $email->name = $aopInboundEmailX->handleMimeHeaderDecode($header->subject);
                                 $email->from_addr = $aopInboundEmailX->convertImapToSugarEmailAddress($header->from);
@@ -714,6 +720,7 @@ function pollMonitoredInboxesAOP()
 
 /**
  * Scheduled job function to index any unindexed beans.
+ * @deprecated since v7.12.0
  * @return bool
  */
 function aodIndexUnindexed()
@@ -730,6 +737,10 @@ function aodIndexUnindexed()
     return true;
 }
 
+/**
+ * @deprecated since v7.12.0
+ * @return bool
+ */
 function aodOptimiseIndex()
 {
     $index = BeanFactory::getBean("AOD_Index")->getIndex();
@@ -737,12 +748,15 @@ function aodOptimiseIndex()
     return true;
 }
 
-
+/**
+ * @deprecated since v7.12.0
+ * @return int|void
+ */
 function performLuceneIndexing()
 {
     global $sugar_config;
     $db = DBManagerFactory::getInstance();
-    
+
     if (empty($sugar_config['aod']['enable_aod'])) {
         return;
     }
@@ -777,6 +791,7 @@ function performLuceneIndexing()
 function aorRunScheduledReports()
 {
     require_once 'include/SugarQueue/SugarJobQueue.php';
+    $db = DBManagerFactory::getInstance();
     $date = new DateTime();//Ensure we check all schedules at the same instant
     foreach (BeanFactory::getBean('AOR_Scheduled_Reports')->get_full_list() as $scheduledReport) {
         if ($scheduledReport->status != 'active') {
@@ -792,7 +807,12 @@ function aorRunScheduledReports()
             if (empty($scheduledReport->aor_report_id)) {
                 continue;
             }
-            $job = new SchedulersJob();
+            $queued = $db->fetchOne("SELECT count(*) cnt FROM job_queue WHERE data=".$db->quoted($scheduledReport->id)." and deleted=0 and status = 'running' and execute_time >= " . $db->quoted(date("Y-m-d H:i:s", strtotime("-2 hours"))));
+            if(!empty($queued) && $queued['cnt'] > 0) {
+                LoggerManager::getLogger()->warn('aorRunScheduledReports: id: ' . $scheduledReport->id . ' is already running. Postpone creating new job.');
+                continue;
+            }
+            $job = BeanFactory::newBean('SchedulersJobs');
             $job->name = "Scheduled report - {$scheduledReport->name} on {$date->format('c')}";
             $job->data = $scheduledReport->id;
             $job->target = "class::AORScheduledReportJob";
@@ -807,7 +827,7 @@ function aorRunScheduledReports()
 function processAOW_Workflow()
 {
     require_once('modules/AOW_WorkFlow/AOW_WorkFlow.php');
-    $workflow = new AOW_WorkFlow();
+    $workflow = BeanFactory::newBean('AOW_WorkFlow');
     return $workflow->run_flows();
 }
 
@@ -854,7 +874,7 @@ class AORScheduledReportJob implements RunnableSchedulerJob
         }
         </style>
 EOF;
-        $emailObj = new Email();
+        $emailObj = BeanFactory::newBean('Emails');
         $defaults = $emailObj->getSystemDefaultEmail();
         $mail = new SugarPHPMailer();
 

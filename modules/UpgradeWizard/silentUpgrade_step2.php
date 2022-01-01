@@ -110,7 +110,7 @@ function checkResourceSettings()
                 'special_query_limit' => 50000,
                 'special_query_modules' =>
                     [
-                        0 => 'Reports',
+                        0 => 'AOR_Reports',
                         1 => 'Export',
                         2 => 'Import',
                         3 => 'Administration',
@@ -250,7 +250,7 @@ $subdirs = ['full', 'langpack', 'module', 'patch', 'theme', 'temp'];
 
 require_once('include/entryPoint.php');
 require_once('modules/UpgradeWizard/uw_utils.php');
-require_once('include/utils/zip_utils.php');
+require_once('include/utils/php_zip_utils.php');
 require_once('include/utils/sugar_file_utils.php');
 require_once('include/SugarObjects/SugarConfig.php');
 global $sugar_config;
@@ -286,7 +286,7 @@ if (isset($argv[5]) && (strtolower($argv[5]) === 'yes' || strtolower($argv[5]) =
 
 //Adding admin user to the silent upgrade
 
-$current_user = new User();
+$current_user = BeanFactory::newBean('Users');
 if (isset($argv[4])) {
     //if being used for internal upgrades avoid admin user verification
     $user_name = $argv[4];

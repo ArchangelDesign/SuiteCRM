@@ -136,7 +136,7 @@ function checkResourceSettings()
             'special_query_limit' => 50000,
             'special_query_modules' =>
             array(
-              0 => 'Reports',
+              0 => 'AOR_Reports',
               1 => 'Export',
               2 => 'Import',
               3 => 'Administration',
@@ -496,11 +496,11 @@ if ($upgradeType == constant('DCE_INSTANCE')) {
 
     //load up entrypoint from original template
     require_once("{$argv[4]}/include/entryPoint.php");
-    require_once("{$argv[4]}/include/utils/zip_utils.php");
+    require_once("{$argv[4]}/include/utils/php_zip_utils.php");
     require_once("{$argv[4]}/modules/Administration/UpgradeHistory.php");
     // We need to run the silent upgrade as the admin user,
     global $current_user;
-    $current_user = new User();
+    $current_user = BeanFactory::newBean('Users');
     $current_user->retrieve('1');
 
     //This is DCE instance

@@ -53,7 +53,7 @@ function get_currency()
 {
     global $current_user,$global_currency_obj;
     if (empty($global_currency_obj)) {
-        $global_currency_obj = new Currency();
+        $global_currency_obj = BeanFactory::newBean('Currencies');
         //  $global_currency_symbol = '$';
 
         if ($current_user->getPreference('currency')) {
@@ -73,22 +73,6 @@ class SugarWidgetFieldCurrency extends SugarWidgetFieldInt
         parent::__construct($layout_manager);
         $this->reporter = $this->layout_manager->getAttribute('reporter');
     }
-
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function SugarWidgetFieldCurrency(&$layout_manager)
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct($layout_manager);
-    }
-
-
 
     public function & displayList(&$layout_def)
     {
@@ -243,7 +227,7 @@ class SugarWidgetFieldCurrency extends SugarWidgetFieldInt
 
     /**
      * Return currency for layout_def
-     * @param $layout_def mixed
+     * @param mixed $layout_def
      * @return array Array with currency symbol and currency ID
      */
     protected function getCurrency($layout_def)

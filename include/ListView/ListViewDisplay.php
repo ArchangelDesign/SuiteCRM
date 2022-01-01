@@ -84,19 +84,7 @@ class ListViewDisplay
         $this->searchColumns = array() ;
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function ListViewDisplay()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
+
 
 
     public function shouldProcess($moduleDir)
@@ -243,7 +231,9 @@ class ListViewDisplay
      */
     public function process($file, $data, $htmlVar)
     {
-        if (!is_array($data['data'])) {
+        if (!is_array($data)) {
+            LoggerManager::getLogger()->warn('Row data must be an array, ' . gettype($data) . ' given.');
+        } else if (is_array($data) && !is_array($data['data'])) {
             LoggerManager::getLogger()->warn('Row data must be an array, ' . gettype($data['data']) . ' given and converting to an array.');
         }
         $this->rowCount = count((array)$data['data']);
@@ -586,7 +576,7 @@ class ListViewDisplay
         }
         global $current_user, $app_strings;
 
-        $admin = new Administration();
+        $admin = BeanFactory::newBean('Administration');
         $admin->retrieveSettings('system');
         $user_merge = $current_user->getPreference('mailmerge_on');
         $module_dir = (!empty($this->seed->module_dir) ? $this->seed->module_dir : '');

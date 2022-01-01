@@ -78,19 +78,7 @@ class ModuleInstaller
         $this->extensions = $extensions;
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function ModuleInstaller()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
+
 
 
     /*
@@ -486,7 +474,7 @@ class ModuleInstaller
     public function rebuildExt($ext, $filename)
     {
         $this->log(translate('LBL_MI_REBUILDING') . " $ext...");
-        $this->merge_files("Ext/$ext/", $filename);
+        $this->merge_files("Ext/$ext", $filename);
     }
 
     /**
@@ -599,7 +587,7 @@ class ModuleInstaller
             return true;
         }
 
-        $user = new User();
+        $user = BeanFactory::newBean('Users');
         $users = get_user_array();
         $unified_search_modules_display = array();
         require('custom/modules/unified_search_modules_display.php');
@@ -946,9 +934,11 @@ class ModuleInstaller
     // Non-standard - needs special rebuild call
     public function install_languages()
     {
-        $languages = array();
         if (isset($this->installdefs['language'])) {
             $this->log(translate('LBL_MI_IN_LANG'));
+            $modules = [];
+            $languages = [];
+
             foreach ($this->installdefs['language'] as $packs) {
                 $modules[]=$packs['to_module'];
                 $languages[$packs['language']] = $packs['language'];
@@ -983,9 +973,12 @@ class ModuleInstaller
     // Non-standard, needs special rebuild
     public function uninstall_languages()
     {
-        $languages = array();
         if (isset($this->installdefs['language'])) {
+
             $this->log(translate('LBL_MI_UN_LANG'));
+            $modules = [];
+            $languages = [];
+
             foreach ($this->installdefs['language'] as $packs) {
                 $modules[]=$packs['to_module'];
                 $languages[$packs['language']] = $packs['language'];
@@ -1048,6 +1041,9 @@ class ModuleInstaller
     public function enable_languages()
     {
         if (isset($this->installdefs['language'])) {
+             $modules = [];
+             $languages = [];
+            
             foreach ($this->installdefs['language'] as $item) {
                 $from = str_replace('<basepath>', $this->base_dir, $item['from']);
                 $GLOBALS['log']->debug("Enabling Language {$item['language']}... from $from for " .$item['to_module']);
@@ -1373,9 +1369,10 @@ class ModuleInstaller
                 }
 
                 $relName = strpos($filename, "MetaData") !== false ? substr($filename, 0, strlen($filename) - 12) : $filename;
-                $out = sugar_fopen("custom/Extension/application/Ext/TableDictionary/$relName.php", 'w') ;
-                fwrite($out, $str . "include('custom/metadata/$filename');\n\n?>") ;
-                fclose($out) ;
+                sugar_file_put_contents(
+                    "custom/Extension/application/Ext/TableDictionary/$relName.php",
+                    $str . "include('custom/metadata/$filename');\n\n?>"
+                );
             }
 
 
@@ -1740,7 +1737,7 @@ class ModuleInstaller
     {
         foreach ($languages as $language=>$value) {
             $this->log(translate('LBL_MI_REBUILDING') . " Language...$language");
-            $this->merge_files('Ext/Language/', $language.'.lang.ext.php', $language);
+            $this->merge_files('Ext/Language', $language.'.lang.ext.php', $language);
             if ($modules!="") {
                 foreach ($modules as $module) {
                     LanguageManager::clearLanguageCache($module, $language);
@@ -1759,7 +1756,7 @@ class ModuleInstaller
     public function rebuild_dashletcontainers()
     {
         $this->log(translate('LBL_MI_REBUILDING') . " DC Actions...");
-        $this->merge_files('Ext/DashletContainer/Containers/', 'dcactions.ext.php');
+        $this->merge_files('Ext/DashletContainer/Containers', 'dcactions.ext.php');
     }
 
     public function rebuild_tabledictionary()
@@ -1864,9 +1861,7 @@ class ModuleInstaller
                     if (!file_exists("custom/$extpath")) {
                         mkdir_recursive("custom/$extpath", true);
                     }
-                    $out = sugar_fopen("custom/$extpath/$name", 'w');
-                    fwrite($out, $extension);
-                    fclose($out);
+                    sugar_file_put_contents("custom/$extpath/$name", $extension);
                 } else {
                     if (file_exists("custom/$extpath/$name")) {
                         unlink("custom/$extpath/$name");
@@ -1897,9 +1892,7 @@ class ModuleInstaller
             if (!file_exists("custom/$extpath")) {
                 mkdir_recursive("custom/$extpath", true);
             }
-            $out = sugar_fopen("custom/$extpath/$name", 'w');
-            fwrite($out, $extension);
-            fclose($out);
+            sugar_file_put_contents("custom/$extpath/$name", $extension);
         } else {
             if (file_exists("custom/$extpath/$name")) {
                 unlink("custom/$extpath/$name");
@@ -1940,7 +1933,7 @@ class ModuleInstaller
             if (!file_exists("custom/Extension/application/Ext/Include")) {
                 mkdir_recursive("custom/Extension/application/Ext/Include", true);
             }
-            file_put_contents("custom/Extension/application/Ext/Include/{$this->id_name}.php", $str);
+            sugar_file_put_contents("custom/Extension/application/Ext/Include/{$this->id_name}.php", $str);
         }
     }
 

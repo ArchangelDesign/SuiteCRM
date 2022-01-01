@@ -1,34 +1,27 @@
 <?php
 
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
 
-class EmailAddressTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+class EmailAddressTest extends SuitePHPUnitFrameworkTestCase
 {
-    public function testEmailAddress()
+    public function testEmailAddress(): void
     {
-        //execute the contructor and check for the Object type and  attributes
-        $email = new EmailAddress();
-        $this->assertInstanceOf('EmailAddress', $email);
-        $this->assertInstanceOf('SugarEmailAddress', $email);
-        $this->assertInstanceOf('SugarBean', $email);
+        // Execute the constructor and check for the Object type and  attributes
+        $email = BeanFactory::newBean('EmailAddresses');
+        self::assertInstanceOf('EmailAddress', $email);
+        self::assertInstanceOf('SugarEmailAddress', $email);
+        self::assertInstanceOf('SugarBean', $email);
 
-        $this->assertAttributeEquals('EmailAddresses', 'module_dir', $email);
-        $this->assertAttributeEquals('EmailAddresses', 'module_name', $email);
-        $this->assertAttributeEquals('EmailAddress', 'object_name', $email);
-        $this->assertAttributeEquals('email_addresses', 'table_name', $email);
-
-        $this->assertAttributeEquals(true, 'disable_row_level_security', $email);
+        self::assertEquals('EmailAddresses', $email->module_dir);
+        self::assertEquals('EmailAddresses', $email->module_name);
+        self::assertEquals('EmailAddress', $email->object_name);
+        self::assertEquals('email_addresses', $email->table_name);
+        self::assertEquals(true, $email->disable_row_level_security);
     }
 
-    public function testsave()
+    public function testsave(): void
     {
-        // save state
-        $state = new \SuiteCRM\StateSaver();
-        $state->pushTable('email_addresses');
-        $state->pushTable('tracker');
-        $state->pushTable('aod_index');
-        
-        // test
-        $email = new EmailAddress();
+        $email = BeanFactory::newBean('EmailAddresses');
 
         $email->email_address = 'test@test.com';
         $email->invaid_email = 0;
@@ -36,17 +29,12 @@ class EmailAddressTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         $email->save();
 
         //test for record ID to verify that record is saved
-        $this->assertTrue(isset($email->id));
-        $this->assertEquals(36, strlen($email->id));
+        self::assertTrue(isset($email->id));
+        self::assertEquals(36, strlen($email->id));
 
         //mark the record as deleted and verify that this record cannot be retrieved anymore.
         $email->mark_deleted($email->id);
         $result = $email->retrieve($email->id);
-        $this->assertEquals(null, $result);
-
-        // clean up
-        $state->popTable('aod_index');
-        $state->popTable('tracker');
-        $state->popTable('email_addresses');
+        self::assertEquals(null, $result);
     }
 }

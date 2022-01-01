@@ -1,39 +1,38 @@
 <?php
 
-class AOS_QuotesTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
+use SuiteCRM\Test\SuitePHPUnitFrameworkTestCase;
+
+class AOS_QuotesTest extends SuitePHPUnitFrameworkTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         global $current_user;
         get_sugar_config_defaults();
-        $current_user = new User();
+        $current_user = BeanFactory::newBean('Users');
     }
 
-    public function testAOS_Quotes()
+    public function testAOS_Quotes(): void
     {
-        //execute the contructor and check for the Object type and  attributes
-        $aosQuotes = new AOS_Quotes();
-        $this->assertInstanceOf('AOS_Quotes', $aosQuotes);
-        $this->assertInstanceOf('Basic', $aosQuotes);
-        $this->assertInstanceOf('SugarBean', $aosQuotes);
+        // Execute the constructor and check for the Object type and  attributes
+        $aosQuotes = BeanFactory::newBean('AOS_Quotes');
+        self::assertInstanceOf('AOS_Quotes', $aosQuotes);
+        self::assertInstanceOf('Basic', $aosQuotes);
+        self::assertInstanceOf('SugarBean', $aosQuotes);
 
-        $this->assertAttributeEquals('AOS_Quotes', 'module_dir', $aosQuotes);
-        $this->assertAttributeEquals('AOS_Quotes', 'object_name', $aosQuotes);
-        $this->assertAttributeEquals('aos_quotes', 'table_name', $aosQuotes);
-        $this->assertAttributeEquals(true, 'new_schema', $aosQuotes);
-        $this->assertAttributeEquals(true, 'disable_row_level_security', $aosQuotes);
-        $this->assertAttributeEquals(true, 'importable', $aosQuotes);
-        $this->assertAttributeEquals(true, 'lineItems', $aosQuotes);
+        self::assertEquals('AOS_Quotes', $aosQuotes->module_dir);
+        self::assertEquals('AOS_Quotes', $aosQuotes->object_name);
+        self::assertEquals('aos_quotes', $aosQuotes->table_name);
+        self::assertEquals(true, $aosQuotes->new_schema);
+        self::assertEquals(true, $aosQuotes->disable_row_level_security);
+        self::assertEquals(true, $aosQuotes->importable);
+        self::assertEquals(true, $aosQuotes->lineItems);
     }
 
-    public function testSaveAndMark_deleted()
+    public function testSaveAndMark_deleted(): void
     {
-        $state = new SuiteCRM\StateSaver();        
-        $state->pushTable('aos_quotes');
-
-        $aosQuotes = new AOS_Quotes();
+        $aosQuotes = BeanFactory::newBean('AOS_Quotes');
 
         $aosQuotes->name = 'test';
         $aosQuotes->total_amt = 100;
@@ -42,15 +41,12 @@ class AOS_QuotesTest extends SuiteCRM\StateCheckerPHPUnitTestCaseAbstract
         $aosQuotes->save();
 
         //test for record ID to verify that record is saved
-        $this->assertTrue(isset($aosQuotes->id));
-        $this->assertEquals(36, strlen($aosQuotes->id));
+        self::assertTrue(isset($aosQuotes->id));
+        self::assertEquals(36, strlen($aosQuotes->id));
 
         //mark the record as deleted and verify that this record cannot be retrieved anymore.
         $aosQuotes->mark_deleted($aosQuotes->id);
         $result = $aosQuotes->retrieve($aosQuotes->id);
-        $this->assertEquals(null, $result);
-        
-        // clean up
-        $state->popTable('aos_quotes');
+        self::assertEquals(null, $result);
     }
 }

@@ -68,19 +68,7 @@ class TemplateHandler
         $this->cacheDir = sugar_cached('');
     }
 
-    /**
-     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
-     */
-    public function TemplateHandler()
-    {
-        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
-        if (isset($GLOBALS['log'])) {
-            $GLOBALS['log']->deprecated($deprecatedMessage);
-        } else {
-            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
-        }
-        self::__construct();
-    }
+
 
 
     public function loadSmarty()
@@ -191,7 +179,7 @@ class TemplateHandler
                 $mod = 'Case';
             }
 
-            $defs = $dictionary[$mod]['fields'];
+            $defs = isset($dictionary[$mod]['fields']) ? $dictionary[$mod]['fields'] : [];
             $defs2 = array();
             //Retrieve all panel field definitions with displayParams Array field set
             $panelFields = array();
@@ -314,7 +302,7 @@ class TemplateHandler
                         $mod = 'Case';
                     }
 
-                    $defs = $dictionary[$mod]['fields'];
+                    $defs = isset($dictionary[$mod]['fields']) ? $dictionary[$mod]['fields'] : [];
                     $contents .= '{literal}';
                     $contents .= $this->createQuickSearchCode($defs, array(), $view);
                     $contents .= '{/literal}';
